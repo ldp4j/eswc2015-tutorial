@@ -50,3 +50,18 @@ $RECYCLE.BIN/
 # Mac crap
 .DS_Store
 /TODO.md
+
+######################
+# JetBrains IntelliJ
+######################
+
+.idea/
+*.iml
+*.ipr
+*.iws
+atlassian-ide-plugin.xml
+out/
+.idea_modules/
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
