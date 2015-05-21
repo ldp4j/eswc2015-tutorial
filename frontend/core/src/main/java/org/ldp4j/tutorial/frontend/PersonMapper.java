@@ -43,6 +43,8 @@ import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.constraints.Constraints.Cardinality;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.ext.InconsistentContentException;
+import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Person;
 
 import com.google.common.base.Objects;
@@ -98,6 +100,9 @@ public class PersonMapper {
 	}
 
 	private static void addDatatypePropertyValue(DataSet dataSet, Name<String> name, String propertyURI, Object rawValue) {
+		if(rawValue==null) {
+			return;
+		}
 		ManagedIndividualId individualId = ManagedIndividualId.createId(name, PersonHandler.ID);
 		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
 		URI propertyId = URI.create(propertyURI);
@@ -106,6 +111,9 @@ public class PersonMapper {
 	}
 
 	private static void addObjectPropertyValue(DataSet dataSet, Name<String> name, String propertyURI, String uri) {
+		if(uri==null) {
+			return;
+		}
 		ManagedIndividualId individualId = ManagedIndividualId.createId(name, PersonHandler.ID);
 		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
 		URI propertyId = URI.create(propertyURI);
@@ -159,14 +167,45 @@ public class PersonMapper {
 		return result;
 	}
 
+	public static Person enforceConsistency(Individual<?, ?> individual) throws UnsupportedContentException {
+		Person newPerson = toPerson(individual);
+		if(newPerson.getAccount()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
+			Shape shape=
+				Constraints.
+					shape().
+						withLabel("person").
+						withComment("Person resource shape").
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(URI.create(ACCOUNT)).
+									withCardinality(Cardinality.mandatory())).
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(URI.create(NAME)).
+									withCardinality(Cardinality.mandatory())).
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(URI.create(LOCATION)).
+									withCardinality(Cardinality.mandatory())).
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(URI.create(WORKPLACE_HOMEPAGE)).
+									withCardinality(Cardinality.mandatory()));
+			Constraints constraints =
+				Constraints.
+					constraints().
+						withTypeShape(URI.create("http://xmlns.com/foaf/0.1/Person"),shape);
+			throw new UnsupportedContentException("Incomplete person definition",constraints);
+		}
+		return newPerson;
+	}
+
 	public static Person enforceConsistency(Individual<?, ?> individual, Person currentPerson) throws InconsistentContentException {
 		Person updatedPerson = toPerson(individual);
 		if(!Objects.equal(currentPerson.getAccount(),updatedPerson.getAccount())) {
 			Shape shape=
 				Constraints.
 					shape().
-						withLabel("person").
-						withComment("Person resource shape").
 						withPropertyConstraint(
 							Constraints.
 								propertyConstraint(URI.create(ACCOUNT)).

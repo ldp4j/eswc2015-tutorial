@@ -33,6 +33,7 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.BasicContainer;
@@ -73,12 +74,12 @@ public class PersonContainerHandler implements ContainerHandler {
 			WriteSession session)
 					throws
 						UnknownResourceException,
-						UnsupportedContentException,
-						ApplicationRuntimeException {
+						ApplicationRuntimeException,
+						UnsupportedContentException {
 
 		Person protoPerson=
 			PersonMapper.
-				toPerson(
+				enforceConsistency(
 					DataSetHelper.
 						newInstance(representation).
 							self());
