@@ -44,6 +44,7 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
+import org.ldp4j.tutorial.application.api.AgendaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,8 @@ public class AgendaApplication extends Application<Configuration> {
 	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaApplication.class);
 
 	private final Name<String> personContainerName;
+
+	private PersonContainerHandler personContainerHandler;
 
 	public AgendaApplication() {
 		this.personContainerName=NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
@@ -89,7 +92,7 @@ public class AgendaApplication extends Application<Configuration> {
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
 		LOGGER.info("Configuring Agenda Application");
 
-		PersonContainerHandler personContainerHandler   = new PersonContainerHandler();
+		personContainerHandler = new PersonContainerHandler();
 		PersonHandler          personHandler            = new PersonHandler();
 
 		ContactContainerHandler contactContainerHandler = new ContactContainerHandler();
@@ -111,7 +114,6 @@ public class AgendaApplication extends Application<Configuration> {
 		bootstrap.addHandler(personHandler);
 		bootstrap.addHandler(contactContainerHandler);
 		bootstrap.addHandler(contactHandler);
-
 		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 
 		LOGGER.info("Agenda Application Configuration completed.");
@@ -121,6 +123,9 @@ public class AgendaApplication extends Application<Configuration> {
 	public void initialize(WriteSession session) {
 		LOGGER.info("Initializing Agenda Application");
 		try {
+			AgendaService service = AgendaService.getInstance();
+			this.personContainerHandler.setAgendaService(service);
+			// TODO: create endpoints if necessary
 			session.saveChanges();
 			LOGGER.info("Agenda Application Initialization completed.");
 		} catch (WriteSessionException e) {

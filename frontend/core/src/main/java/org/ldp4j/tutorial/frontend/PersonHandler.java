@@ -26,7 +26,15 @@
  */
 package org.ldp4j.tutorial.frontend;
 
+import java.net.URI;
+
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ExternalIndividual;
+import org.ldp4j.application.data.Literal;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
@@ -40,6 +48,9 @@ import org.ldp4j.application.session.AttachmentSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
+import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.Person;
+import org.omg.CORBA.portable.ValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +84,35 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		return this.contactContainerHandler;
 	}
 
+	@Override
+	public DataSet get(ResourceSnapshot resource) {
+		DataSet dataSet = DataSetFactory.createDataSet(resource.name());
+
+		Person person = AgendaService.getInstance().getPerson(resource.name().id().toString());
+
+		addDatatypePropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/account", person.getAccount());
+		addDatatypePropertyValue(dataSet,resource, "http://xmlns.com/foaf/0.1/name", person.getName());
+		addObjectPropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/based_near", person.getLocation());
+		addObjectPropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/workplaceHomepage", person.getWorkplaceHomepage());
+
+		return dataSet;
+	}
+
+	private void addDatatypePropertyValue(DataSet dataSet, ResourceSnapshot resource, String propertyURI, Object rawValue) {
+		ManagedIndividualId individualId = ManagedIndividualId.createId(resource.name(), PersonHandler.ID);
+		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
+		URI propertyId = URI.create(propertyURI);
+		Literal<Object> value = DataSetUtils.newLiteral(rawValue);
+		individual.addValue(propertyId,value);
+	}
+
+	private void addObjectPropertyValue(DataSet dataSet, ResourceSnapshot resource, String propertyURI, String uri) {
+		ManagedIndividualId individualId = ManagedIndividualId.createId(resource.name(), PersonHandler.ID);
+		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
+		URI propertyId = URI.create(propertyURI);
+		ExternalIndividual external = dataSet.individual(URI.create(uri),ExternalIndividual.class);
+		individual.addValue(propertyId,external);
+	}
 
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
