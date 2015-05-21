@@ -26,55 +26,45 @@
  */
 package org.ldp4j.tutorial.application.core;
 
+import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 
-final class MutablePerson implements Person {
-	String account;
-	String name;
-	String location;
-	String workplaceHomepage;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-	@Override
-	public void setWorkplaceHomepage(String workplacehomepage) {
-		this.workplaceHomepage = workplacehomepage;
+public class Account {
 
-	}
+    private Person person;
 
-	@Override
-	public void setName(String name) {
-		this.name = name;
+    private Map<String, Contact> contacts = new LinkedHashMap<String, Contact>();
 
-	}
+    public Account(Person person){
+        this.person = person;
+    }
 
-	@Override
-	public void setLocation(String location) {
-		this.location = location;
+    public Person getPerson() {
+        return person;
+    }
 
-	}
+    public void addContact (Contact contact){
+        contacts.put(contact.getEmail(), contact);
+    }
 
-	@Override
-	public void setAccount(String account) {
-		this.account = account;
+    public Contact getContact(String email) {
+        return contacts.get(email);
+    }
 
-	}
+    public boolean deleteContact(String email) {
+        Contact contact =contacts.remove(email);
+        if(contact!= null){
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	@Override
-	public String getWorkplaceHomepage() {
-		return workplaceHomepage;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public String getLocation() {
-		return location;
-	}
-
-	@Override
-	public String getAccount() {
-		return account;
-	}
+    public Collection<Contact> listContacts(){
+        return contacts.values();
+    }
 }
