@@ -26,14 +26,9 @@
  */
 package org.ldp4j.tutorial.frontend;
 
-import java.net.URI;
-
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetHelper;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualHelper;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
@@ -81,17 +76,14 @@ public class PersonContainerHandler implements ContainerHandler {
 						UnsupportedContentException,
 						ApplicationRuntimeException {
 
-		DataSetHelper helper=
-				DataSetHelper.newInstance(representation);
+		Person protoPerson=
+			PersonMapper.
+				toPerson(
+					DataSetHelper.
+						newInstance(representation).
+							self());
 
-		Individual<?, ?> self = helper.self();
-
-		String account = firstLiteralValue(self, "http://xmlns.com/foaf/0.1/account",String.class);
-		String name= firstLiteralValue(self, "http://xmlns.com/foaf/0.1/name",String.class);
-		String location= firstIndividualValue(self, "http://xmlns.com/foaf/0.1/based_near").toString();
-		String workplaceHomepage= firstIndividualValue(self, "http://xmlns.com/foaf/0.1/workplaceHomepage").toString();
-
-		Person person = this.service.createPerson(account, name, location, workplaceHomepage);
+		Person person = this.service.createPerson(protoPerson.getAccount(), protoPerson.getName(), protoPerson.getLocation(), protoPerson.getWorkplaceHomepage());
 
 		Name<?> personName=NamingScheme.getDefault().name(person.getAccount());
 		Name<?> contactsName=NamingScheme.getDefault().name(person.getAccount(),"contacts");
@@ -113,20 +105,6 @@ public class PersonContainerHandler implements ContainerHandler {
 			this.service.deletePerson(person.getAccount());
 			throw new IllegalStateException("Could not create person",e);
 		}
-	}
-
-	private <T> T firstLiteralValue(Individual<?, ?> self, String propertyURI, final Class<? extends T> clazz) {
-		return
-			new IndividualHelper(self).
-				property(propertyURI).
-				firstValue(clazz);
-	}
-
-	private URI firstIndividualValue(Individual<?, ?> self, String propertyURI) {
-		return
-			new IndividualHelper(self).
-				property(propertyURI).
-				firstIndividual(ExternalIndividual.class);
 	}
 
 }

@@ -27,6 +27,8 @@
 package org.ldp4j.tutorial.frontend;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
@@ -99,14 +101,28 @@ public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws UnknownResourceException, UnsupportedContentException, InconsistentContentException, ApplicationRuntimeException {
-		DataSet dataSet = get(resource);
-		AgendaApplicationHelper.enforceConsistency(resource.name(),PersonHandler.ID,content,dataSet);
+		Person currentPerson=findPerson(resource);
+
+		Individual<?,?> individual = content.individualOfId(ManagedIndividualId.createId(resource.name(), PersonHandler.ID));
+		if(individual==null) {
+			throw new ApplicationRuntimeException("Could not find input data");
+		}
+
+		Person updatedPerson=PersonMapper.enforceConsistency(individual, currentPerson);
+
+		String oldName=currentPerson.getName();
+		String oldLocation=currentPerson.getLocation();
+		String oldWorkplaceHomepage=currentPerson.getWorkplaceHomepage();
 		try {
-			// TODO: Add update logic
+			currentPerson.setName(updatedPerson.getName());
+			currentPerson.setLocation(updatedPerson.getLocation());
+			currentPerson.setWorkplaceHomepage(updatedPerson.getWorkplaceHomepage());
 			session.modify(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
-			// TODO: Add recovery logic
+			currentPerson.setName(oldName);
+			currentPerson.setLocation(oldLocation);
+			currentPerson.setWorkplaceHomepage(oldWorkplaceHomepage);
 			throw new IllegalStateException("Person update failed",e);
 		}
 	}
