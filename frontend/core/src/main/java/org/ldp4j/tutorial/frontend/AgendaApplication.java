@@ -89,13 +89,13 @@ public class AgendaApplication extends Application<Configuration> {
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
 		LOGGER.info("Configuring Agenda Application");
 
-		PersonContainerHandler personContainerHandler   = new PersonContainerHandler(AgendaService.getInstance());
-		PersonHandler          personHandler            = new PersonHandler();
+		AgendaService service = AgendaService.getInstance();
+
+		PersonContainerHandler personContainerHandler   = new PersonContainerHandler(service);
+		PersonHandler          personHandler            = new PersonHandler(service);
 
 		ContactContainerHandler contactContainerHandler = new ContactContainerHandler();
 		ContactHandler          contactHandler          = new ContactHandler();
-
-		personHandler.setContactContainerHandler(contactContainerHandler);
 
 		contactContainerHandler.setContactHandler(contactHandler);
 
@@ -103,6 +103,7 @@ public class AgendaApplication extends Application<Configuration> {
 		bootstrap.addHandler(personHandler);
 		bootstrap.addHandler(contactContainerHandler);
 		bootstrap.addHandler(contactHandler);
+
 		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 
 		LOGGER.info("Agenda Application Configuration completed.");

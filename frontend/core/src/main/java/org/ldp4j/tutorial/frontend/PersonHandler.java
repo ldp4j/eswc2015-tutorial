@@ -26,25 +26,16 @@
  */
 package org.ldp4j.tutorial.frontend;
 
-import java.net.URI;
-
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
-import org.ldp4j.application.session.AttachmentSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
@@ -62,75 +53,47 @@ import org.slf4j.LoggerFactory;
 			handler=ContactContainerHandler.class),
 	}
 )
-public class PersonHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
+public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
 
 	public static final String ID="PersonHandler";
 	public static final String PERSON_CONTACTS="personContacts";
 
-	private ContactContainerHandler contactContainerHandler;
+	private final AgendaService service;
 
-	protected PersonHandler() {
-		super(ID);
+	protected PersonHandler(AgendaService service) {
+		this.service = service;
 	}
 
-	protected final void setContactContainerHandler(ContactContainerHandler handler) {
-		this.contactContainerHandler=handler;
-	}
-
-	protected final ContactContainerHandler contactContainerHandler() {
-		return this.contactContainerHandler;
+	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
+		Person person = this.service.getPerson(resource.name().id().toString());
+		if(person==null) {
+			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
+		}
+		return person;
 	}
 
 	@Override
-	public DataSet get(ResourceSnapshot resource) {
-		DataSet dataSet = DataSetFactory.createDataSet(resource.name());
-
-		Person person = AgendaService.getInstance().getPerson(resource.name().id().toString());
-
-		addDatatypePropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/account", person.getAccount());
-		addDatatypePropertyValue(dataSet,resource, "http://xmlns.com/foaf/0.1/name", person.getName());
-		addObjectPropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/based_near", person.getLocation());
-		addObjectPropertyValue(dataSet,resource,"http://xmlns.com/foaf/0.1/workplaceHomepage", person.getWorkplaceHomepage());
-
-		return dataSet;
-	}
-
-	private void addDatatypePropertyValue(DataSet dataSet, ResourceSnapshot resource, String propertyURI, Object rawValue) {
-		ManagedIndividualId individualId = ManagedIndividualId.createId(resource.name(), PersonHandler.ID);
-		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
-		URI propertyId = URI.create(propertyURI);
-		Literal<Object> value = DataSetUtils.newLiteral(rawValue);
-		individual.addValue(propertyId,value);
-	}
-
-	private void addObjectPropertyValue(DataSet dataSet, ResourceSnapshot resource, String propertyURI, String uri) {
-		ManagedIndividualId individualId = ManagedIndividualId.createId(resource.name(), PersonHandler.ID);
-		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
-		URI propertyId = URI.create(propertyURI);
-		ExternalIndividual external = dataSet.individual(URI.create(uri),ExternalIndividual.class);
-		individual.addValue(propertyId,external);
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
+		Person person = findPerson(resource);
+		return PersonMapper.toDataSet(person);
 	}
 
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
+		Person person=findPerson(resource);
 		LOGGER.info("Deleting person {}...",resource.name());
-		DataSet personDataSet = get(resource);
-		AttachmentSnapshot contacts = resource.attachmentById(PERSON_CONTACTS);
-		Name<?> contactsName = contacts.resource().name();
-		DataSet contactsDataSet = contactContainerHandler().get(contacts.resource());
 		try {
-			contactContainerHandler().remove(contactsName);
-			remove(resource.name());
+			this.service.deletePerson(person.getAccount());
 			session.delete(resource);
 			session.saveChanges();
-			LOGGER.info("Deleted person {} and contacts {}.",resource.name(),contactsName);
+			LOGGER.info("Deleted person {}.",resource.name());
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			add(resource.name(),personDataSet);
-			contactContainerHandler().add(contactsName,contactsDataSet);
-			throw new IllegalStateException("Person deletion failed",e);
+			this.service.createPerson(person.getAccount(),person.getName(),person.getLocation(),person.getWorkplaceHomepage());
+			LOGGER.error("Person 43"+resource.name()+" deletion failed ",e);
+			throw new ApplicationRuntimeException("Person deletion failed",e);
 		}
 	}
 
@@ -139,12 +102,11 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		DataSet dataSet = get(resource);
 		AgendaApplicationHelper.enforceConsistency(resource.name(),PersonHandler.ID,content,dataSet);
 		try {
-			add(resource.name(),content);
+			// TODO: Add update logic
 			session.modify(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
-			// Recover if failed
-			add(resource.name(),dataSet);
+			// TODO: Add recovery logic
 			throw new IllegalStateException("Person update failed",e);
 		}
 	}
