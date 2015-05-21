@@ -42,8 +42,8 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.constraints.Constraints.Cardinality;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
+import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.ext.InconsistentContentException;
-import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Person;
 
@@ -52,6 +52,7 @@ import com.google.common.base.Optional;
 
 public class PersonMapper {
 
+	private static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
 	private static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
 	private static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
 	private static final String NAME = "http://xmlns.com/foaf/0.1/name";
@@ -148,6 +149,7 @@ public class PersonMapper {
 
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
 
+		addObjectPropertyValue(dataSet,personName,RDF.TYPE.qualifiedEntityName(),PERSON);
 		addDatatypePropertyValue(dataSet,personName,ACCOUNT,person.getAccount());
 		addDatatypePropertyValue(dataSet,personName,NAME,person.getName());
 		addObjectPropertyValue(dataSet,personName,LOCATION,person.getLocation());
@@ -158,6 +160,7 @@ public class PersonMapper {
 
 	public static Person toPerson(Individual<?,?> self) {
 		MutablePerson result = new MutablePerson();
+
 		result.setAccount(firstLiteralValue(self,ACCOUNT,String.class));
 		result.setName(firstLiteralValue(self,NAME,String.class));
 		Optional<URI> location = Optional.fromNullable(firstIndividualValue(self,LOCATION));
@@ -168,8 +171,9 @@ public class PersonMapper {
 	}
 
 	public static Person enforceConsistency(Individual<?, ?> individual) throws UnsupportedContentException {
+		Optional<URI> type = Optional.fromNullable(firstIndividualValue(individual,RDF.TYPE.qualifiedEntityName()));
 		Person newPerson = toPerson(individual);
-		if(newPerson.getAccount()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
+		if(!type.isPresent() || !type.get().toString().equals(PERSON) || newPerson.getAccount()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
 			Shape shape=
 				Constraints.
 					shape().
@@ -194,7 +198,7 @@ public class PersonMapper {
 			Constraints constraints =
 				Constraints.
 					constraints().
-						withTypeShape(URI.create("http://xmlns.com/foaf/0.1/Person"),shape);
+						withTypeShape(URI.create(PERSON),shape);
 			throw new UnsupportedContentException("Incomplete person definition",constraints);
 		}
 		return newPerson;

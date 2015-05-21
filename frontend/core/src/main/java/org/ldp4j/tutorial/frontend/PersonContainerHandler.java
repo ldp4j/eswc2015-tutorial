@@ -33,7 +33,6 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
-import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.BasicContainer;
