@@ -32,20 +32,9 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualVisitor;
-import org.ldp4j.application.data.LanguageLiteral;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.LiteralVisitor;
-import org.ldp4j.application.data.LocalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.IndividualHelper;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.data.NewIndividual;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.RelativeIndividual;
-import org.ldp4j.application.data.TypedLiteral;
-import org.ldp4j.application.data.Value;
-import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
@@ -140,110 +129,17 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 	}
 
 	private <T> T firstLiteralValue(Individual<?, ?> self, String propertyURI, final Class<? extends T> clazz) {
-		Property property = self.property(URI.create(propertyURI));
-		if(!property.hasValues()) {
-			throw new RuntimeException();
-		}
-		Value value = property.iterator().next();
-		class Extractor implements ValueVisitor {
-
-			private T value=null;
-
-			@Override
-			public void visitLiteral(Literal<?> value) {
-				value.accept(new LiteralVisitor() {
-
-					private T cast(Object object) {
-						// Extension for supporting conversions
-						return clazz.cast(object);
-					}
-
-					@Override
-					public void visitLiteral(Literal<?> literal) {
-						Extractor.this.value=cast(literal.get());
-					}
-
-					@Override
-					public void visitTypedLiteral(TypedLiteral<?> literal) {
-						Extractor.this.value=cast(literal.get());
-					}
-
-					@Override
-					public void visitLanguageLiteral(LanguageLiteral literal) {
-						Extractor.this.value=cast(literal.get());
-					}
-
-				});
-			}
-
-			@Override
-			public void visitIndividual(Individual<?, ?> value) {
-				throw new RuntimeException("No literal value");
-			}
-
-			public T getValue() {
-				return this.value;
-			}
-
-		};
-		Extractor extractor = new Extractor();
-		value.accept(extractor);
-		return extractor.getValue();
+		return
+			new IndividualHelper(self).
+				property(propertyURI).
+				firstValue(clazz);
 	}
+
 	private URI firstIndividualValue(Individual<?, ?> self, String propertyURI) {
-		Property property = self.property(URI.create(propertyURI));
-		if(!property.hasValues()) {
-			throw new RuntimeException();
-		}
-		Value value = property.iterator().next();
-		class Extractor implements ValueVisitor {
-
-			private URI value=null;
-
-			@Override
-			public void visitLiteral(Literal<?> value) {
-				throw new RuntimeException("No individual value");
-			}
-
-			@Override
-			public void visitIndividual(Individual<?, ?> value) {
-				value.accept(new IndividualVisitor() {
-
-					@Override
-					public void visitRelativeIndividual(RelativeIndividual individual) {
-						throw new RuntimeException("No external individual");
-					}
-
-					@Override
-					public void visitNewIndividual(NewIndividual individual) {
-						throw new RuntimeException("No external individual");
-					}
-
-					@Override
-					public void visitManagedIndividual(ManagedIndividual individual) {
-						throw new RuntimeException("No external individual");
-					}
-
-					@Override
-					public void visitLocalIndividual(LocalIndividual individual) {
-						throw new RuntimeException("No external individual");
-					}
-
-					@Override
-					public void visitExternalIndividual(ExternalIndividual individual) {
-						Extractor.this.value=individual.id();
-					}
-				});
-			}
-
-			public URI getValue() {
-				return this.value;
-			}
-
-		};
-		Extractor extractor = new Extractor();
-		value.accept(extractor);
-		return extractor.getValue();
+		return
+			new IndividualHelper(self).
+				property(propertyURI).
+				firstIndividual(ExternalIndividual.class);
 	}
 
 	public void setAgendaService(AgendaService application) {
