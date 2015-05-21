@@ -50,7 +50,6 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Person;
-import org.omg.CORBA.portable.ValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

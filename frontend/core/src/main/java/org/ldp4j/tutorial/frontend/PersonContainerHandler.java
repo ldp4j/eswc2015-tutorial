@@ -29,6 +29,7 @@ package org.ldp4j.tutorial.frontend;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
@@ -36,6 +37,7 @@ import org.ldp4j.application.data.IndividualHelper;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
+import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.BasicContainer;
@@ -52,36 +54,21 @@ import org.slf4j.LoggerFactory;
 	id = PersonContainerHandler.ID,
 	memberHandler = PersonHandler.class
 )
-public class PersonContainerHandler extends InMemoryContainerHandler {
+public class PersonContainerHandler implements ContainerHandler {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonContainerHandler.class);
 
 	public static final String ID="PersonContainerHandler";
 
-	private PersonHandler handler;
+	private final AgendaService service;
 
-	private ContactContainerHandler contactContainerHandler;
-
-	private AgendaService service;
-
-	protected PersonContainerHandler() {
-		super(ID);
+	protected PersonContainerHandler(AgendaService service) {
+		this.service = service;
 	}
 
-	protected final void setPersonHandler(PersonHandler handler) {
-		this.handler=handler;
-	}
-
-	protected final PersonHandler personHandler() {
-		return this.handler;
-	}
-
-	protected final void setContactContainerHandler(ContactContainerHandler handler) {
-		this.contactContainerHandler=handler;
-	}
-
-	protected final ContactContainerHandler contactContainerHandler() {
-		return this.contactContainerHandler;
+	@Override
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
+		return DataSetFactory.createDataSet(resource.name());
 	}
 
 	@Override
@@ -140,14 +127,6 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 			new IndividualHelper(self).
 				property(propertyURI).
 				firstIndividual(ExternalIndividual.class);
-	}
-
-	public void setAgendaService(AgendaService application) {
-		this.service = application;
-	}
-
-	public AgendaService getAgendaService() {
-		return this.service;
 	}
 
 }

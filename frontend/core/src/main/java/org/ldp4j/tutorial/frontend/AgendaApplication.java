@@ -33,7 +33,6 @@ import java.util.Date;
 
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.domain.LDP;
@@ -57,8 +56,6 @@ public class AgendaApplication extends Application<Configuration> {
 	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaApplication.class);
 
 	private final Name<String> personContainerName;
-
-	private PersonContainerHandler personContainerHandler;
 
 	public AgendaApplication() {
 		this.personContainerName=NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
@@ -92,19 +89,11 @@ public class AgendaApplication extends Application<Configuration> {
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
 		LOGGER.info("Configuring Agenda Application");
 
-		personContainerHandler = new PersonContainerHandler();
+		PersonContainerHandler personContainerHandler   = new PersonContainerHandler(AgendaService.getInstance());
 		PersonHandler          personHandler            = new PersonHandler();
 
 		ContactContainerHandler contactContainerHandler = new ContactContainerHandler();
 		ContactHandler          contactHandler          = new ContactHandler();
-
-		personContainerHandler.
-			add(
-				this.personContainerName,
-				DataSetFactory.createDataSet(this.personContainerName));
-
-		personContainerHandler.setPersonHandler(personHandler);
-		personContainerHandler.setContactContainerHandler(contactContainerHandler);
 
 		personHandler.setContactContainerHandler(contactContainerHandler);
 
@@ -123,8 +112,6 @@ public class AgendaApplication extends Application<Configuration> {
 	public void initialize(WriteSession session) {
 		LOGGER.info("Initializing Agenda Application");
 		try {
-			AgendaService service = AgendaService.getInstance();
-			this.personContainerHandler.setAgendaService(service);
 			// TODO: create endpoints if necessary
 			session.saveChanges();
 			LOGGER.info("Agenda Application Initialization completed.");
