@@ -26,7 +26,6 @@
  */
 package org.ldp4j.tutorial.application.api;
 
-import java.util.Collection;
 
 public interface  Person {
 
@@ -73,45 +72,12 @@ public interface  Person {
      * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:workplaceHomepage</a>
      * @return
      */
-    public String getWorkplacehomepage();
+    public String getWorkplaceHomepage();
 
     /**
      * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:workplaceHomepage</a>
      * @param workplacehomepage
      */
-    public void setWorkplacehomepage(String workplacehomepage);
-
-    /**
-     * Adds a contact to this person's contact list
-     * @param contact
-     */
-    public void addContact(Contact contact);
-
-    /**
-     * Gets a contact identified by the email address
-     * @param email
-     * @return
-     */
-    public Contact getContact(String email);
-
-    /**
-     * Update a contact
-     * @param contact
-     */
-    public void updateContact(Contact contact);
-
-    /**
-     * Delete a contact from the person's contact list
-     * @param email identifier for the contact
-     * @return true if the contact was present and deleted, false otherwise
-     */
-    public boolean deleteContact(String email);
-
-    /**
-     * Returns the contacts of this person
-     * @return a collection of contacts
-     */
-    public Collection<Contact> listContacts();
-
+    public void setWorkplaceHomepage(String workplacehomepage);
 
 }
