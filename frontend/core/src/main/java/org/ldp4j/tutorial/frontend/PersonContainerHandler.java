@@ -28,7 +28,7 @@ package org.ldp4j.tutorial.frontend;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetHelper;
+import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
@@ -79,16 +79,16 @@ public class PersonContainerHandler implements ContainerHandler {
 		Person protoPerson=
 			PersonMapper.
 				enforceConsistency(
-					DataSetHelper.
-						newInstance(representation).
+					DataSetUtils.
+						newHelper(representation).
 							self());
 
-		Person person = this.service.createPerson(protoPerson.getAccount(), protoPerson.getName(), protoPerson.getLocation(), protoPerson.getWorkplaceHomepage());
+		Person person = this.service.createPerson(protoPerson.getEmail(), protoPerson.getName(), protoPerson.getLocation(), protoPerson.getWorkplaceHomepage());
 
-		Name<?> personName=NamingScheme.getDefault().name(person.getAccount());
-		Name<?> contactsName=NamingScheme.getDefault().name(person.getAccount(),"contacts");
+		Name<?> personName=NamingScheme.getDefault().name(person.getEmail());
+		Name<?> contactsName=NamingScheme.getDefault().name(person.getEmail(),"contacts");
 
-		LOGGER.trace("Creating account {} for person {} from: \n{}",person.getAccount(),person.getName(),representation);
+		LOGGER.trace("Creating account {} for person {} from: \n{}",person.getEmail(),person.getName(),representation);
 
 		try {
 			ResourceSnapshot personResource=container.addMember(personName);
@@ -102,7 +102,7 @@ public class PersonContainerHandler implements ContainerHandler {
 			session.saveChanges();
 			return personResource;
 		} catch (WriteSessionException e) {
-			this.service.deletePerson(person.getAccount());
+			this.service.deletePerson(person.getEmail());
 			throw new IllegalStateException("Could not create person",e);
 		}
 	}

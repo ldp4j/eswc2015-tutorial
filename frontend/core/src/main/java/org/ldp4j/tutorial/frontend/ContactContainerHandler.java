@@ -26,16 +26,10 @@
  */
 package org.ldp4j.tutorial.frontend;
 
-import java.util.Date;
-
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetHelper;
-import org.ldp4j.application.data.DataSetModificationException;
+import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
@@ -44,6 +38,9 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
+import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.Contact;
+import org.ldp4j.tutorial.application.api.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +57,11 @@ public class ContactContainerHandler extends InMemoryContainerHandler {
 
 	private ContactHandler handler;
 
-	protected ContactContainerHandler() {
+	private final AgendaService service;
+
+	protected ContactContainerHandler(AgendaService service) {
 		super(ID);
+		this.service = service;
 	}
 
 	protected final void setContactHandler(ContactHandler handler) {
@@ -73,6 +73,19 @@ public class ContactContainerHandler extends InMemoryContainerHandler {
 	}
 
 	@Override
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
+		return DataSetFactory.createDataSet(resource.name());
+	}
+
+	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
+		Person person = this.service.getPerson(resource.name().id().toString());
+		if(person==null) {
+			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
+		}
+		return person;
+	}
+
+	@Override
 	public ResourceSnapshot create(
 			ContainerSnapshot container,
 			DataSet representation,
@@ -81,39 +94,30 @@ public class ContactContainerHandler extends InMemoryContainerHandler {
 						UnknownResourceException,
 						UnsupportedContentException,
 						ApplicationRuntimeException {
-		Name<?> contactName=AgendaApplicationHelper.nextName(ContactHandler.ID);
+		ResourceSnapshot parent = container.parent();
+		Person person=findPerson(parent);
+
+		Contact protoContact=ContactMapper.toContact(DataSetUtils.newHelper(representation).self());
+
+		Name<?> contactName=ContactMapper.contactName(protoContact);
 
 		LOGGER.trace("Creating contact from: \n{}",representation);
 
-		DataSetHelper helper=
-			DataSetHelper.newInstance(representation);
-
-		ManagedIndividualId newId =
-			ManagedIndividualId.
-				createId(
-					contactName,
-					ContactHandler.ID);
-
+		Contact contact=
+			this.service.
+					addContactToPerson(
+						person.getEmail(),
+						protoContact.getFullName(),
+						protoContact.getUrl(),
+						protoContact.getEmail(),
+						protoContact.getTelephone());
 		try {
-			ManagedIndividual individual=helper.manage(newId);
-			individual.
-				addValue(
-					AgendaApplicationHelper.READ_ONLY_PROPERTY,
-					DataSetUtils.newLiteral(new Date().toString()));
-		} catch (DataSetModificationException e) {
-			// TODO: Verify this weird error
-			Constraints constraints = Constraints.constraints();
-			throw new UnsupportedContentException("Could not process request", e,constraints);
-		}
-
-		try {
-			handler().add(contactName,representation);
-			ResourceSnapshot contact=container.addMember(contactName);
-			LOGGER.info("Created contact {}",contact.name());
+			ResourceSnapshot contactResource=container.addMember(contactName);
+			LOGGER.info("Created contact {} for person {} ",contact.getEmail(),person.getEmail());
 			session.saveChanges();
-			return contact;
+			return contactResource;
 		} catch (WriteSessionException e) {
-			handler().remove(contactName);
+			this.service.deletePersonContact(person.getEmail(),contact.getEmail());
 			throw new IllegalStateException("Could not create contact",e);
 		}
 	}

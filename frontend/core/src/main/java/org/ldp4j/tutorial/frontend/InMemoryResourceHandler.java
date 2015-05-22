@@ -33,7 +33,9 @@ import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
 
 import com.google.common.collect.LinkedListMultimap;
@@ -43,21 +45,21 @@ public class InMemoryResourceHandler implements ResourceHandler {
 
 	private final String handlerName;
 	private final Map<Name<?>, DataSet> resources;
-	
+
 	protected InMemoryResourceHandler(String handlerName) {
 		this.handlerName=handlerName;
 		this.resources=new LinkedHashMap<Name<?>,DataSet>();
 	}
 
 	@Override
-	public DataSet get(ResourceSnapshot resource) {
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
 		DataSet dataSet = this.resources.get(resource.name());
 		if(dataSet==null) {
 			throw new IllegalStateException("Unknown resource '"+resource.name()+"'");
 		}
 		return dataSet;
 	}
-	
+
 	public void add(Name<?> name, DataSet data) {
 		this.resources.put(name,data);
 	}
@@ -66,19 +68,19 @@ public class InMemoryResourceHandler implements ResourceHandler {
 		remove(name);
 		add(name,data);
 	}
-	
+
 	public void clear() {
 		this.resources.clear();
 	}
-	
+
 	public int size() {
 		return this.resources.size();
 	}
-	
+
 	public void remove(Name<?> name) {
 		this.resources.remove(name);
 	}
-	
+
 	public boolean hasResource(Name<?> resourceName) {
 		return this.resources.containsKey(resourceName);
 	}
@@ -93,7 +95,7 @@ public class InMemoryResourceHandler implements ResourceHandler {
 	}
 
 	private static final Multimap<String,ResourceHandler> loadedHandlers=LinkedListMultimap.<String, ResourceHandler>create();
-	
+
 	public static <T extends ResourceHandler> List<T> getInstances(Class<? extends T> handlerClass) {
 		List<T> result = new ArrayList<T>();
 		for(ResourceHandler handler:loadedHandlers.get(handlerClass.getCanonicalName())) {
@@ -101,5 +103,5 @@ public class InMemoryResourceHandler implements ResourceHandler {
 		}
 		return result;
 	}
-	
+
 }

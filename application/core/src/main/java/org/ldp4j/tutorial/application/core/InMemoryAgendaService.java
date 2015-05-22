@@ -43,7 +43,7 @@ public class InMemoryAgendaService extends AgendaService {
 	@Override
 	public Person createPerson(String account, String name, String location, String workplaceHomepage) {
 		Person p=new MutablePerson();
-		p.setAccount(account);
+		p.setEmail(account);
 		p.setName(name);
 		p.setLocation(location);
 		p.setWorkplaceHomepage(workplaceHomepage);

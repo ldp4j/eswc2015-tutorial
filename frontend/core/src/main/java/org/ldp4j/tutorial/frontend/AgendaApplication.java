@@ -94,8 +94,8 @@ public class AgendaApplication extends Application<Configuration> {
 		PersonContainerHandler personContainerHandler   = new PersonContainerHandler(service);
 		PersonHandler          personHandler            = new PersonHandler(service);
 
-		ContactContainerHandler contactContainerHandler = new ContactContainerHandler();
-		ContactHandler          contactHandler          = new ContactHandler();
+		ContactContainerHandler contactContainerHandler = new ContactContainerHandler(service);
+		ContactHandler          contactHandler          = new ContactHandler(service);
 
 		contactContainerHandler.setContactHandler(contactHandler);
 

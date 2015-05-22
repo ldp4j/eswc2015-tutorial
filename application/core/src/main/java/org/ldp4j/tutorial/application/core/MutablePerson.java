@@ -53,7 +53,7 @@ final class MutablePerson implements Person {
 	}
 
 	@Override
-	public void setAccount(String account) {
+	public void setEmail(String account) {
 		this.account = account;
 
 	}
@@ -74,7 +74,7 @@ final class MutablePerson implements Person {
 	}
 
 	@Override
-	public String getAccount() {
+	public String getEmail() {
 		return account;
 	}
 }

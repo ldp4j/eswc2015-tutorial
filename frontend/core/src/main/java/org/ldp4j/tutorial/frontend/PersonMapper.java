@@ -33,8 +33,6 @@ import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualHelper;
-import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
@@ -50,26 +48,26 @@ import org.ldp4j.tutorial.application.api.Person;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
-public class PersonMapper {
+public final class PersonMapper {
 
 	private static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
 	private static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
 	private static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
 	private static final String NAME = "http://xmlns.com/foaf/0.1/name";
-	private static final String ACCOUNT = "http://xmlns.com/foaf/0.1/account";
+	private static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
 
 	private static final class MutablePerson implements Person {
-		private String account;
+		private String email;
 		private String name;
 		private String location;
 		private String workplaceHomepage;
 
-		public String getAccount() {
-			return account;
+		public String getEmail() {
+			return email;
 		}
 
-		public void setAccount(String account) {
-			this.account = account;
+		public void setEmail(String account) {
+			this.email = account;
 		}
 
 		public String getName() {
@@ -101,14 +99,11 @@ public class PersonMapper {
 	}
 
 	private static void addDatatypePropertyValue(DataSet dataSet, Name<String> name, String propertyURI, Object rawValue) {
-		if(rawValue==null) {
-			return;
-		}
-		ManagedIndividualId individualId = ManagedIndividualId.createId(name, PersonHandler.ID);
-		ManagedIndividual individual = dataSet.individual(individualId, ManagedIndividual.class);
-		URI propertyId = URI.create(propertyURI);
-		Literal<Object> value = DataSetUtils.newLiteral(rawValue);
-		individual.addValue(propertyId,value);
+		DataSetUtils.
+			newHelper(dataSet).
+				managedIndividual(name, PersonHandler.ID).
+					property(propertyURI).
+						withLiteral(rawValue);
 	}
 
 	private static void addObjectPropertyValue(DataSet dataSet, Name<String> name, String propertyURI, String uri) {
@@ -124,24 +119,26 @@ public class PersonMapper {
 
 	private static <T> T firstLiteralValue(Individual<?, ?> self, String propertyURI, final Class<? extends T> clazz) {
 		return
-			new IndividualHelper(self).
-				property(propertyURI).
-				firstValue(clazz);
+			DataSetUtils.
+				newHelper(self).
+					property(propertyURI).
+						firstValue(clazz);
 	}
 
 	private static URI firstIndividualValue(Individual<?, ?> self, String propertyURI) {
 		return
-			new IndividualHelper(self).
-				property(propertyURI).
-				firstIndividual(ExternalIndividual.class);
+			DataSetUtils.
+				newHelper(self).
+					property(propertyURI).
+						firstIndividual(ExternalIndividual.class);
 	}
 
 	public static Name<String> personName(Person person) {
-		return NamingScheme.getDefault().name(person.getAccount());
+		return NamingScheme.getDefault().name(person.getEmail());
 	}
 
 	public static Name<String> contactsName(Person person) {
-		return NamingScheme.getDefault().name(person.getAccount(),"contacts");
+		return NamingScheme.getDefault().name(person.getEmail(),"contacts");
 	}
 
 	public static DataSet toDataSet(Person person) {
@@ -150,7 +147,7 @@ public class PersonMapper {
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
 
 		addObjectPropertyValue(dataSet,personName,RDF.TYPE.qualifiedEntityName(),PERSON);
-		addDatatypePropertyValue(dataSet,personName,ACCOUNT,person.getAccount());
+		addObjectPropertyValue(dataSet,personName,EMAIL,person.getEmail());
 		addDatatypePropertyValue(dataSet,personName,NAME,person.getName());
 		addObjectPropertyValue(dataSet,personName,LOCATION,person.getLocation());
 		addObjectPropertyValue(dataSet,personName,WORKPLACE_HOMEPAGE,person.getWorkplaceHomepage());
@@ -160,8 +157,8 @@ public class PersonMapper {
 
 	public static Person toPerson(Individual<?,?> self) {
 		MutablePerson result = new MutablePerson();
-
-		result.setAccount(firstLiteralValue(self,ACCOUNT,String.class));
+		Optional<URI> email = Optional.fromNullable(firstIndividualValue(self,EMAIL));
+		result.setEmail(email.isPresent()?email.get().toString():null);
 		result.setName(firstLiteralValue(self,NAME,String.class));
 		Optional<URI> location = Optional.fromNullable(firstIndividualValue(self,LOCATION));
 		result.setLocation(location.isPresent()?location.get().toString():null);
@@ -173,7 +170,7 @@ public class PersonMapper {
 	public static Person enforceConsistency(Individual<?, ?> individual) throws UnsupportedContentException {
 		Optional<URI> type = Optional.fromNullable(firstIndividualValue(individual,RDF.TYPE.qualifiedEntityName()));
 		Person newPerson = toPerson(individual);
-		if(!type.isPresent() || !type.get().toString().equals(PERSON) || newPerson.getAccount()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
+		if(!type.isPresent() || !type.get().toString().equals(PERSON) || newPerson.getEmail()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
 			Shape shape=
 				Constraints.
 					shape().
@@ -181,7 +178,7 @@ public class PersonMapper {
 						withComment("Person resource shape").
 						withPropertyConstraint(
 							Constraints.
-								propertyConstraint(URI.create(ACCOUNT)).
+								propertyConstraint(URI.create(EMAIL)).
 									withCardinality(Cardinality.mandatory())).
 						withPropertyConstraint(
 							Constraints.
@@ -206,14 +203,17 @@ public class PersonMapper {
 
 	public static Person enforceConsistency(Individual<?, ?> individual, Person currentPerson) throws InconsistentContentException {
 		Person updatedPerson = toPerson(individual);
-		if(!Objects.equal(currentPerson.getAccount(),updatedPerson.getAccount())) {
+		if(!Objects.equal(currentPerson.getEmail(),updatedPerson.getEmail())) {
+			DataSet tmp =
+					DataSetFactory.createDataSet(individual.dataSet().name());
+				ExternalIndividual emailIndividual = tmp.individual(URI.create(currentPerson.getEmail()),ExternalIndividual.class);
 			Shape shape=
 				Constraints.
 					shape().
 						withPropertyConstraint(
 							Constraints.
-								propertyConstraint(URI.create(ACCOUNT)).
-									withValue(DataSetUtils.newLiteral(currentPerson.getAccount()))).
+								propertyConstraint(URI.create(EMAIL)).
+									withValue(emailIndividual)).
 						withPropertyConstraint(
 							Constraints.
 								propertyConstraint(URI.create(NAME)).

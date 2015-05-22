@@ -87,14 +87,14 @@ public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 		Person person=findPerson(resource);
 		LOGGER.info("Deleting person {}...",resource.name());
 		try {
-			this.service.deletePerson(person.getAccount());
+			this.service.deletePerson(person.getEmail());
 			session.delete(resource);
 			session.saveChanges();
 			LOGGER.info("Deleted person {}.",resource.name());
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			this.service.createPerson(person.getAccount(),person.getName(),person.getLocation(),person.getWorkplaceHomepage());
-			LOGGER.error("Person 43"+resource.name()+" deletion failed ",e);
+			this.service.createPerson(person.getEmail(),person.getName(),person.getLocation(),person.getWorkplaceHomepage());
+			LOGGER.error("Person "+resource.name()+" deletion failed ",e);
 			throw new ApplicationRuntimeException("Person deletion failed",e);
 		}
 	}

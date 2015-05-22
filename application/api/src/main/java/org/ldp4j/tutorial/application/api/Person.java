@@ -30,17 +30,17 @@ package org.ldp4j.tutorial.application.api;
 public interface  Person {
 
     /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/account">foaf:account</a>
-     * @return the application account id of the person.
+     * Property: <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
+     * @return the email of the person.
      */
-    public String getAccount();
+    public String getEmail();
 
     /**
-     * Sets the account id of the person;
-     * Property: <a href="http://xmlns.com/foaf/0.1/account">foaf:account</a>
-     * @param account account id
+     * Sets the email of the person;
+     * Property: <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
+     * @param email email of the person
      */
-    public void setAccount(String account);
+    public void setEmail(String email);
 
     /**
      * Property: <a href="http://xmlns.com/foaf/0.1/name">foaf:name</a>

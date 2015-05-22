@@ -26,6 +26,8 @@
  */
 package org.ldp4j.tutorial.frontend;
 
+import java.io.Serializable;
+
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
@@ -37,6 +39,8 @@ import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
+import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.Contact;
 
 @Resource(
 	id=ContactHandler.ID
@@ -45,8 +49,27 @@ public class ContactHandler extends InMemoryResourceHandler implements Modifiabl
 
 	public static final String ID="ContactHandler";
 
-	protected ContactHandler() {
+	private final AgendaService service;
+
+	protected ContactHandler(AgendaService service) {
 		super(ID);
+		this.service = service;
+	}
+
+	private Contact findContact(ResourceSnapshot resource) throws UnknownResourceException {
+		Serializable personId = resource.parent().parent().name().id();
+		Serializable contactId = resource.name().id();
+		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		if(contact==null) {
+			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
+		}
+		return contact;
+	}
+
+	@Override
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
+		Contact contact = findContact(resource);
+		return ContactMapper.toDataSet(contact);
 	}
 
 	@Override
