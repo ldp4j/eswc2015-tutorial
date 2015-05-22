@@ -29,10 +29,13 @@ package org.ldp4j.tutorial.frontend;
 import java.io.Serializable;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.Resource;
@@ -45,14 +48,13 @@ import org.ldp4j.tutorial.application.api.Contact;
 @Resource(
 	id=ContactHandler.ID
 )
-public class ContactHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
+public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
 
 	public static final String ID="ContactHandler";
 
 	private final AgendaService service;
 
 	protected ContactHandler(AgendaService service) {
-		super(ID);
 		this.service = service;
 	}
 
@@ -74,29 +76,46 @@ public class ContactHandler extends InMemoryResourceHandler implements Modifiabl
 
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
-		DataSet dataSet = get(resource);
+		Serializable personId = resource.parent().parent().name().id();
+		Serializable contactId = resource.name().id();
+		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		if(contact==null) {
+			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
+		}
+		this.service.deletePersonContact(personId.toString(),contactId.toString());
 		try {
-			remove(resource.name());
 			session.delete(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			add(resource.name(),dataSet);
+			this.service.addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
 			throw new IllegalStateException("Contact deletion failed",e);
 		}
 	}
 
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws UnknownResourceException, UnsupportedContentException, InconsistentContentException, ApplicationRuntimeException {
-		DataSet dataSet = get(resource);
-		AgendaApplicationHelper.enforceConsistency(resource.name(),ContactHandler.ID,content,dataSet);
+		Serializable personId = resource.parent().parent().name().id();
+		Serializable contactId = resource.name().id();
+		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		if(contact==null) {
+			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
+		}
+		Individual<?,?> individual = content.individualOfId(ManagedIndividualId.createId(resource.name(), ContactHandler.ID));
+		if(individual==null) {
+			throw new ApplicationRuntimeException("Could not find input data");
+		}
+
+		Contact newContact = ContactMapper.toContact(individual);
+		contact.setFullName(newContact.getFullName());
+		contact.setTelephone(newContact.getTelephone());
+		contact.setUrl(newContact.getUrl());
 		try {
-			add(resource.name(),content);
 			session.modify(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			add(resource.name(),dataSet);
+			this.service.addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
 			throw new IllegalStateException("Contact update failed",e);
 		}
 	}
