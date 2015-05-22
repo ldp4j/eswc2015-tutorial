@@ -106,7 +106,7 @@ public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
 			throw new ApplicationRuntimeException("Could not find input data");
 		}
 
-		Contact newContact = ContactMapper.toContact(individual);
+		Contact newContact = ContactMapper.enforceConsistency(individual, contact);
 		contact.setFullName(newContact.getFullName());
 		contact.setTelephone(newContact.getTelephone());
 		contact.setUrl(newContact.getUrl());

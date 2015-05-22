@@ -243,16 +243,16 @@ public final class ContactMapper {
 		return newPerson;
 	}
 
-	public static Contact enforceConsistency(Individual<?, ?> individual, Contact currentPerson) throws InconsistentContentException {
-		Contact updatedPerson = toContact(individual);
-		if(!Objects.equal(currentPerson.getEmail(),updatedPerson.getEmail())) {
+	public static Contact enforceConsistency(Individual<?, ?> individual, Contact currentContact) throws InconsistentContentException {
+		Contact updatedContact = toContact(individual);
+		if(!Objects.equal(currentContact.getEmail(),updatedContact.getEmail())) {
 			Shape shape=
 				Constraints.
 					shape().
 						withPropertyConstraint(
 							Constraints.
 								propertyConstraint(URI.create(EMAIL)).
-									withValue(DataSetUtils.newLiteral(currentPerson.getEmail()))).
+									withValue(DataSetUtils.newLiteral(currentContact.getEmail()))).
 						withPropertyConstraint(
 							Constraints.
 								propertyConstraint(URI.create(FULL_NAME)).
@@ -272,7 +272,7 @@ public final class ContactMapper {
 						withNodeShape(individual,shape);
 			throw new InconsistentContentException("Person account cannot be modified",constraints);
 		}
-		return updatedPerson;
+		return updatedContact;
 	}
 
 }

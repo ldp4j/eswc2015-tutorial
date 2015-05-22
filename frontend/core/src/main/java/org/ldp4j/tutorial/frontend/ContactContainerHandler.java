@@ -62,17 +62,17 @@ public class ContactContainerHandler implements ContainerHandler {
 		this.service = service;
 	}
 
-	@Override
-	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
-		return DataSetFactory.createDataSet(resource.name());
-	}
-
 	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
 		Person person = this.service.getPerson(resource.name().id().toString());
 		if(person==null) {
 			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
 		}
 		return person;
+	}
+
+	@Override
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
+		return DataSetFactory.createDataSet(resource.name());
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class ContactContainerHandler implements ContainerHandler {
 		ResourceSnapshot parent = container.parent();
 		Person person=findPerson(parent);
 
-		Contact protoContact=ContactMapper.toContact(DataSetUtils.newHelper(representation).self());
+		Contact protoContact=ContactMapper.enforceConsistency(DataSetUtils.newHelper(representation).self());
 
 		Name<?> contactName=ContactMapper.contactName(protoContact);
 
