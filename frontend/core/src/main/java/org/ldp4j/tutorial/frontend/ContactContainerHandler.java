@@ -31,6 +31,7 @@ import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
+import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.annotations.DirectContainer;
@@ -49,27 +50,16 @@ import org.slf4j.LoggerFactory;
 	memberHandler = ContactHandler.class,
 	membershipPredicate="http://www.ldp4j.org/ns/application#hasContact"
 )
-public class ContactContainerHandler extends InMemoryContainerHandler {
+public class ContactContainerHandler implements ContainerHandler {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonContainerHandler.class);
 
 	public static final String ID="ContactContainerHandler";
 
-	private ContactHandler handler;
-
 	private final AgendaService service;
 
 	protected ContactContainerHandler(AgendaService service) {
-		super(ID);
 		this.service = service;
-	}
-
-	protected final void setContactHandler(ContactHandler handler) {
-		this.handler=handler;
-	}
-
-	protected final ContactHandler handler() {
-		return this.handler;
 	}
 
 	@Override

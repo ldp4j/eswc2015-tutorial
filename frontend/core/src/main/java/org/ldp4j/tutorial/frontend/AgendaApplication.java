@@ -26,17 +26,8 @@
  */
 package org.ldp4j.tutorial.frontend;
 
-import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
-
-import java.net.URI;
-import java.util.Date;
-
-import org.ldp4j.application.data.DataDSL;
-import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.WriteSession;
@@ -49,11 +40,11 @@ import org.slf4j.LoggerFactory;
 
 public class AgendaApplication extends Application<Configuration> {
 
-	private static final String PERSON_CONTAINER_NAME   = "PersonContainer";
-
-	private static final String ROOT_PERSON_CONTAINER_PATH    = "persons/";
-
 	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaApplication.class);
+
+	private static final String PERSON_CONTAINER_NAME     = "PersonContainer";
+
+	private static final String ROOT_PERSON_CONTAINER_PATH= "persons/";
 
 	private final Name<String> personContainerName;
 
@@ -61,70 +52,38 @@ public class AgendaApplication extends Application<Configuration> {
 		this.personContainerName=NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
 	}
 
-	protected final DataSet getInitialData(String templateId, String name, boolean markContainer) {
-		DataSet initial=null;
-		if(!markContainer) {
-			initial=
-				DataDSL.
-					dataSet().
-						individual(newReference().toManagedIndividual(templateId).named(name)).
-							hasProperty(AgendaApplicationHelper.READ_ONLY_PROPERTY.toString()).
-								withValue(new Date().toString()).
-							build();
-		} else {
-			initial=
-				DataDSL.
-					dataSet().
-						individual(newReference().toManagedIndividual(templateId).named(name)).
-							hasProperty(AgendaApplicationHelper.READ_ONLY_PROPERTY.toString()).
-								withValue(new Date().toString()).
-							hasLink(RDF.TYPE.qualifiedEntityName()).
-								referringTo(newReference().toExternalIndividual().atLocation(LDP.BASIC_CONTAINER.as(URI.class))).
-							build();
-		}
-		return initial;
-	}
-
 	@Override
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
-		LOGGER.info("Configuring Agenda Application");
+		LOGGER.info("Starting Agenda Application configuration...");
 
 		AgendaService service = AgendaService.getInstance();
 
-		PersonContainerHandler personContainerHandler   = new PersonContainerHandler(service);
-		PersonHandler          personHandler            = new PersonHandler(service);
-
-		ContactContainerHandler contactContainerHandler = new ContactContainerHandler(service);
-		ContactHandler          contactHandler          = new ContactHandler(service);
-
-		contactContainerHandler.setContactHandler(contactHandler);
-
-		bootstrap.addHandler(personContainerHandler);
-		bootstrap.addHandler(personHandler);
-		bootstrap.addHandler(contactContainerHandler);
-		bootstrap.addHandler(contactHandler);
+		bootstrap.addHandler(new PersonContainerHandler(service));
+		bootstrap.addHandler(new PersonHandler(service));
+		bootstrap.addHandler(new ContactContainerHandler(service));
+		bootstrap.addHandler(new ContactHandler(service));
 
 		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 
-		LOGGER.info("Agenda Application Configuration completed.");
+		LOGGER.info("Agenda Application configuration completed.");
 	}
 
 	@Override
 	public void initialize(WriteSession session) {
-		LOGGER.info("Initializing Agenda Application");
+		LOGGER.info("Initializing Agenda Application...");
 		try {
-			// TODO: create endpoints if necessary
 			session.saveChanges();
-			LOGGER.info("Agenda Application Initialization completed.");
+			LOGGER.info("Agenda Application initialization completed.");
 		} catch (WriteSessionException e) {
-			LOGGER.warn("Agenda Application Initialization failed.",e);
+			LOGGER.warn("Agenda Application initialization failed.",e);
 			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
 	public void shutdown() {
-		LOGGER.info("Shutting down Agenda Application");
+		LOGGER.info("Starting Agenda Application shutdown...");
+		LOGGER.info("Agenda Application shutdown completed.");
 	}
 
 }
