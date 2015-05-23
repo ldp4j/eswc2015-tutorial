@@ -85,7 +85,7 @@ public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
 		Person person=findPerson(resource);
-		LOGGER.info("Deleting person {}...",resource.name());
+		LOGGER.info("Deleting person {}...",AgendaApplicationHelper.toString(person));
 		try {
 			this.service.deletePerson(person.getEmail());
 			session.delete(resource);

@@ -26,6 +26,7 @@
  */
 package org.ldp4j.tutorial.frontend;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
@@ -49,12 +50,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 public final class PersonMapper {
-
-	private static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
-	private static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
-	private static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
-	private static final String NAME = "http://xmlns.com/foaf/0.1/name";
-	private static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
 
 	private static final class MutablePerson implements Person {
 		private String email;
@@ -94,6 +89,12 @@ public final class PersonMapper {
 			this.workplaceHomepage = workplaceHomepage;
 		}
 	}
+
+	private static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
+	private static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
+	private static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
+	private static final String NAME = "http://xmlns.com/foaf/0.1/name";
+	private static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
 
 	private PersonMapper() {
 	}
@@ -233,6 +234,14 @@ public final class PersonMapper {
 			throw new InconsistentContentException("Person account cannot be modified",constraints);
 		}
 		return updatedPerson;
+	}
+
+	public static String personId(Name<?> name2) {
+		Serializable id = name2.id();
+		if(id instanceof String) {
+			return (String)id;
+		}
+		throw new AssertionError("Person identifiers must be Strings, not "+id.getClass().getCanonicalName());
 	}
 
 }

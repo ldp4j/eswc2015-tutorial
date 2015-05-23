@@ -43,6 +43,7 @@ import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Contact;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -186,37 +187,32 @@ public final class ContactMapper {
 		if(!type.isPresent() || !type.get().toString().equals(INDIVIDUAL) || newPerson.getEmail()==null || newPerson.getUrl()==null || newPerson.getFullName()==null || newPerson.getTelephone()==null) {
 			DataSet tmp =
 				DataSetFactory.createDataSet(individual.dataSet().name());
+			ExternalIndividual individualIndividual = tmp.individual(URI.create(INDIVIDUAL),ExternalIndividual.class);
 			ExternalIndividual voiceIndividual = tmp.individual(URI.create(VOICE),ExternalIndividual.class);
 			ExternalIndividual homeIndividual = tmp.individual(URI.create(HOME),ExternalIndividual.class);
 			ExternalIndividual typeIndividual = tmp.individual(URI.create(TYPE),ExternalIndividual.class);
 			Shape telephoneShape=
-					Constraints.
-						shape().
-							withPropertyConstraint(
-								Constraints.
-									propertyConstraint(typeIndividual.id()).
-										withValue(homeIndividual,voiceIndividual)).
-							withPropertyConstraint(
-								Constraints.
-									propertyConstraint(URI.create(NUMBER)).
-										withCardinality(Cardinality.mandatory())).
-							withPropertyConstraint(
-								Constraints.
-									propertyConstraint(URI.create(EMAIL)).
-										withCardinality(Cardinality.mandatory())).
-							withPropertyConstraint(
-								Constraints.
-									propertyConstraint(URI.create(URL)).
-										withCardinality(Cardinality.mandatory())).
-							withPropertyConstraint(
-								Constraints.
-									propertyConstraint(URI.create(TELEPHONE)).
-										withCardinality(Cardinality.mandatory()));
+				Constraints.
+					shape().
+						withLabel("telephone").
+						withComment("Telephone resource shape").
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(typeIndividual.id()).
+									withValue(homeIndividual,voiceIndividual)).
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(URI.create(NUMBER)).
+									withCardinality(Cardinality.mandatory()));
 			Shape individualShape=
 				Constraints.
 					shape().
 						withLabel("individual").
 						withComment("Individual resource shape").
+						withPropertyConstraint(
+							Constraints.
+								propertyConstraint(typeIndividual.id()).
+									withValue(individualIndividual)).
 						withPropertyConstraint(
 							Constraints.
 								propertyConstraint(URI.create(FULL_NAME)).
@@ -238,6 +234,9 @@ public final class ContactMapper {
 				Constraints.
 					constraints().
 						withTypeShape(URI.create(INDIVIDUAL),individualShape);
+
+			LoggerFactory.getLogger(ContactMapper.class).trace(constraints.toString());
+
 			throw new UnsupportedContentException("Incomplete contact definition",constraints);
 		}
 		return newPerson;
@@ -270,7 +269,7 @@ public final class ContactMapper {
 				Constraints.
 					constraints().
 						withNodeShape(individual,shape);
-			throw new InconsistentContentException("Person account cannot be modified",constraints);
+			throw new InconsistentContentException("Contact email cannot be modified",constraints);
 		}
 		return updatedContact;
 	}

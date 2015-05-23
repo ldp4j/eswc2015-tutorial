@@ -42,30 +42,26 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @DirectContainer(
 	id = ContactContainerHandler.ID,
 	memberHandler = ContactHandler.class,
 	membershipPredicate="http://www.ldp4j.org/ns/application#hasContact"
 )
-public class ContactContainerHandler implements ContainerHandler {
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(PersonContainerHandler.class);
+public class ContactContainerHandler extends Serviceable implements ContainerHandler {
 
 	public static final String ID="ContactContainerHandler";
 
-	private final AgendaService service;
 
 	protected ContactContainerHandler(AgendaService service) {
-		this.service = service;
+		super(service);
 	}
 
 	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		Person person = this.service.getPerson(resource.name().id().toString());
+		String id = PersonMapper.personId(resource.name());
+		Person person = agendaService().getPerson(id);
 		if(person==null) {
-			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
+			throw unknownResource(id, "person");
 		}
 		return person;
 	}
@@ -91,10 +87,10 @@ public class ContactContainerHandler implements ContainerHandler {
 
 		Name<?> contactName=ContactMapper.contactName(protoContact);
 
-		LOGGER.trace("Creating contact from: \n{}",representation);
+		trace("Creating contact from: %n%s",representation);
 
 		Contact contact=
-			this.service.
+			agendaService().
 					addContactToPerson(
 						person.getEmail(),
 						protoContact.getFullName(),
@@ -103,12 +99,12 @@ public class ContactContainerHandler implements ContainerHandler {
 						protoContact.getTelephone());
 		try {
 			ResourceSnapshot contactResource=container.addMember(contactName);
-			LOGGER.info("Created contact {} for person {} ",contact.getEmail(),person.getEmail());
+			info("Created contact %s for person %s",contact.getEmail(),person.getEmail());
 			session.saveChanges();
 			return contactResource;
 		} catch (WriteSessionException e) {
-			this.service.deletePersonContact(person.getEmail(),contact.getEmail());
-			throw new IllegalStateException("Could not create contact",e);
+			agendaService().deletePersonContact(person.getEmail(),contact.getEmail());
+			throw unexpectedFailure(e, "Could not create contact %s",contact);
 		}
 	}
 

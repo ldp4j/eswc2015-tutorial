@@ -30,7 +30,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
@@ -57,13 +56,16 @@ public class PersonContainerHandler implements ContainerHandler {
 
 	private final AgendaService service;
 
-	protected PersonContainerHandler(AgendaService service) {
+	public PersonContainerHandler(AgendaService service) {
 		this.service = service;
 	}
 
 	@Override
 	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
-		return DataSetFactory.createDataSet(resource.name());
+		// For the time there is nothing to return
+		return
+			DataSetFactory.
+				createDataSet(resource.name());
 	}
 
 	@Override
@@ -83,14 +85,20 @@ public class PersonContainerHandler implements ContainerHandler {
 						newHelper(representation).
 							self());
 
-		Person person = this.service.createPerson(protoPerson.getEmail(), protoPerson.getName(), protoPerson.getLocation(), protoPerson.getWorkplaceHomepage());
+		Person person=
+			this.service.
+				createPerson(
+					protoPerson.getEmail(),
+					protoPerson.getName(),
+					protoPerson.getLocation(),
+					protoPerson.getWorkplaceHomepage());
 
-		Name<?> personName=NamingScheme.getDefault().name(person.getEmail());
-		Name<?> contactsName=NamingScheme.getDefault().name(person.getEmail(),"contacts");
-
-		LOGGER.trace("Creating account {} for person {} from: \n{}",person.getEmail(),person.getName(),representation);
-
+		LOGGER.trace("Requested person creation: \n{}",representation);
+		LOGGER.debug("Creating person {}...",AgendaApplicationHelper.toString(person));
 		try {
+			Name<?> personName=PersonMapper.personName(person);
+			Name<?> contactsName=PersonMapper.contactsName(person);
+
 			ResourceSnapshot personResource=container.addMember(personName);
 			ContainerSnapshot contactsResource = personResource.
 				createAttachedResource(
@@ -98,12 +106,13 @@ public class PersonContainerHandler implements ContainerHandler {
 					PersonHandler.PERSON_CONTACTS,
 					contactsName,
 					ContactContainerHandler.class);
-			LOGGER.info("Created person {} with contacts {}",personResource.name(),contactsResource.name());
+			LOGGER.info("Created person resource {} with contacts resource {}",personResource.name(),contactsResource.name());
 			session.saveChanges();
 			return personResource;
 		} catch (WriteSessionException e) {
 			this.service.deletePerson(person.getEmail());
-			throw new IllegalStateException("Could not create person",e);
+			LOGGER.debug("Could not create person {} ({})",AgendaApplicationHelper.toString(person),e.getMessage());
+			throw new ApplicationRuntimeException("Could not create person "+person,e);
 		}
 	}
 
