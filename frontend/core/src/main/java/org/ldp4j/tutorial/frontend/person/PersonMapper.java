@@ -47,10 +47,21 @@ import com.google.common.base.Optional;
 final class PersonMapper implements PersonVocabulary {
 
 	private static final class MutablePerson implements Person {
+
 		private String email;
 		private String name;
 		private String location;
 		private String workplaceHomepage;
+
+		private MutablePerson(Person source) {
+			setEmail(source.getEmail());
+			setName(source.getName());
+			setLocation(source.getLocation());
+			setWorkplaceHomepage(source.getWorkplaceHomepage());
+		}
+
+		private MutablePerson() {
+		}
 
 		public String getEmail() {
 			return email;
@@ -151,6 +162,16 @@ final class PersonMapper implements PersonVocabulary {
 		Optional<URI> workplaceHomepage= Optional.fromNullable(firstIndividualValue(individual,WORKPLACE_HOMEPAGE));
 		person.setWorkplaceHomepage(workplaceHomepage.isPresent()?workplaceHomepage.get().toString():null);
 		return result;
+	}
+
+	public static Person clone(Person person) {
+		return new MutablePerson(person);
+	}
+
+	public static void copy(Person source, Person target) {
+		target.setName(source.getName());
+		target.setLocation(source.getLocation());
+		target.setWorkplaceHomepage(source.getWorkplaceHomepage());
 	}
 
 }

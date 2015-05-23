@@ -165,4 +165,10 @@ final class ContactMapper implements ContactVocabulary {
 		return new MutableContact(contact);
 	}
 
+	public static void copy(Contact source, Contact target) {
+		target.setFullName(source.getFullName());
+		target.setTelephone(source.getTelephone());
+		target.setUrl(source.getUrl());
+	}
+
 }

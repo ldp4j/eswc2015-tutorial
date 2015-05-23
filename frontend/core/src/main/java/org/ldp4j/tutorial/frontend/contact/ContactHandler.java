@@ -28,7 +28,6 @@ package org.ldp4j.tutorial.frontend.contact;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
@@ -42,8 +41,8 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Contact;
-import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Serviceable;
 import org.ldp4j.tutorial.frontend.util.Typed;
 
@@ -59,7 +58,9 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 	}
 
 	private Contact findContact(ContactId id) throws UnknownResourceException {
-		Contact contact = agendaService().getPersonContact(id.getPerson(),id.getEmail());
+		Contact contact=
+			agendaService().
+				getPersonContact(id.getPerson(),id.getEmail());
 		if(contact==null) {
 			super.unknownResource(id,"Contact");
 		}
@@ -80,7 +81,10 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 		ContactId contactId = IdentityUtil.contactId(resource);
 		trace("Requested contact %s deletion",contactId);
 		Contact currentContact = findContact(contactId);
-		agendaService().deletePersonContact(contactId.getPerson(),contactId.getEmail());
+		agendaService().
+			deletePersonContact(
+				contactId.getPerson(),
+				contactId.getEmail());
 		try {
 			session.delete(resource);
 			session.saveChanges();
@@ -114,33 +118,21 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 		Contact currentContact = findContact(contactId);
 
 		Individual<?,?> individual=
-			content.
-				individualOfId(
-					ManagedIndividualId.
-						createId(resource.name(), ContactHandler.ID));
-		if(individual==null) {
-			throw unexpectedFailure("Could not find input data");
-		}
+			IdentityUtil.
+				contactIndividual(content,currentContact);
 
-		Typed<Contact> typedContact=ContactMapper.toContact(individual);
-		ContactConstraints.validate(typedContact);
-		ContactConstraints.checkConstraints(currentContact,typedContact);
+		Typed<Contact> updatedContact=ContactMapper.toContact(individual);
+		ContactConstraints.validate(updatedContact);
+		ContactConstraints.checkConstraints(currentContact,updatedContact);
 
 		Contact backupContact=ContactMapper.clone(currentContact);
-
-		Contact updatedContact = typedContact.get();
-		currentContact.setFullName(updatedContact.getFullName());
-		currentContact.setTelephone(updatedContact.getTelephone());
-		currentContact.setUrl(updatedContact.getUrl());
+		ContactMapper.copy(updatedContact.get(), currentContact);
 		try {
 			session.modify(resource);
 			session.saveChanges();
 			info("Updated contact %s : %s",FormatUtil.toString(currentContact));
 		} catch (WriteSessionException e) {
-			// Recover if failed
-			currentContact.setFullName(backupContact.getFullName());
-			currentContact.setTelephone(backupContact.getTelephone());
-			currentContact.setUrl(backupContact.getUrl());
+			ContactMapper.copy(backupContact, currentContact);
 			throw unexpectedFailure(e, "Contact %s update failed",contactId);
 		}
 	}

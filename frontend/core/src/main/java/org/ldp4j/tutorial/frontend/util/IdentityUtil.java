@@ -30,16 +30,53 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Serializable;
 
+import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.contact.ContactHandler;
 import org.ldp4j.tutorial.frontend.contact.ContactId;
+import org.ldp4j.tutorial.frontend.person.PersonHandler;
 
 public final class IdentityUtil {
 
 	private IdentityUtil() {
+	}
+
+	public static Individual<?, ?> personIndividual(DataSet content, Person person) {
+		Individual<?,?> result=null;
+		if(person!=null) {
+			ManagedIndividualId id=
+				ManagedIndividualId.
+					createId(
+						name(person),
+						PersonHandler.ID);
+			result=content.individual(id,ManagedIndividual.class);
+		} else {
+			result=DataSetUtils.newHelper(content).self();
+		}
+		return result;
+	}
+
+	public static Individual<?, ?> contactIndividual(DataSet content, Contact contact) {
+		Individual<?,?> result=null;
+		if(contact!=null) {
+			ManagedIndividualId id=
+				ManagedIndividualId.
+					createId(
+						name(contact),
+						ContactHandler.ID);
+			result=content.individual(id,ManagedIndividual.class);
+		} else {
+			result=DataSetUtils.newHelper(content).self();
+		}
+		return result;
 	}
 
 	public static String personId(ResourceSnapshot resource) {
@@ -67,6 +104,5 @@ public final class IdentityUtil {
 	public static Name<String> name(Person person, String... subKeys) {
 		return NamingScheme.getDefault().name(person.getEmail(),subKeys);
 	}
-
 
 }

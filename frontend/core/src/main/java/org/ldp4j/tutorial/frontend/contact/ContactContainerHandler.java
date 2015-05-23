@@ -30,7 +30,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
@@ -43,8 +42,8 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
-import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Serviceable;
 import org.ldp4j.tutorial.frontend.util.Typed;
 
@@ -62,17 +61,17 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 		super(service);
 	}
 
-	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		String id = IdentityUtil.personId(resource);
-		Person person = agendaService().getPerson(id);
+	private Person findPerson(String personId) throws UnknownResourceException {
+		Person person = agendaService().getPerson(personId);
 		if(person==null) {
-			throw unknownResource(id, "person");
+			throw unknownResource(personId, "Person");
 		}
 		return person;
 	}
 
 	@Override
-	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException, ApplicationRuntimeException {
+	public DataSet get(ResourceSnapshot resource)
+			throws UnknownResourceException, ApplicationRuntimeException {
 		return DataSetFactory.createDataSet(resource.name());
 	}
 
@@ -87,17 +86,19 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 						ApplicationRuntimeException {
 		trace("Requested contact creation from: %n%s",representation);
 
-		ResourceSnapshot parent = container.parent();
-		Person person=findPerson(parent);
+		ResourceSnapshot personResource = container.parent();
+		String personId = IdentityUtil.personId(personResource);
+		Person person=findPerson(personId);
 
-		Individual<?, ?> individual = DataSetUtils.newHelper(representation).self();
+		Individual<?, ?> individual=
+			DataSetUtils.
+				newHelper(representation).
+					self();
 
 		Typed<Contact> typedContact=ContactMapper.toContact(individual);
 		ContactConstraints.validate(typedContact);
 
 		Contact protoContact=typedContact.get();
-
-		Name<?> contactName=IdentityUtil.name(protoContact);
 
 		Contact contact=
 			agendaService().
@@ -108,15 +109,16 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 					protoContact.getEmail(),
 					protoContact.getTelephone());
 		try {
-			ResourceSnapshot contactResource=container.addMember(contactName);
+			ResourceSnapshot contactResource=
+					container.addMember(IdentityUtil.name(protoContact));
 			ContactId contactId=IdentityUtil.contactId(contactResource);
 			session.saveChanges();
-			info("Created contact %s: %s",contactId,FormatUtil.toString(contact),person.getEmail());
+			info("Created contact %s : %s",contactId,FormatUtil.toString(contact));
 			return contactResource;
 		} catch (WriteSessionException e) {
 			agendaService().
 				deletePersonContact(person.getEmail(),contact.getEmail());
-			throw unexpectedFailure(e, "Could not create contact %s",FormatUtil.toString(contact));
+			throw unexpectedFailure(e,"Could not create contact %s",FormatUtil.toString(contact));
 		}
 	}
 

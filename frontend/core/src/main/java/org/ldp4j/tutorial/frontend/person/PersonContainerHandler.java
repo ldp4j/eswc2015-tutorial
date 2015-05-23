@@ -28,7 +28,6 @@ package org.ldp4j.tutorial.frontend.person;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -42,8 +41,8 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
-import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Serviceable;
 import org.ldp4j.tutorial.frontend.util.Typed;
 
@@ -78,8 +77,12 @@ public class PersonContainerHandler extends Serviceable implements ContainerHand
 						UnsupportedContentException {
 		trace("Requested person creation: %n%s",representation);
 
-		Individual<?, ?> individual = DataSetUtils.newHelper(representation).self();
+		Individual<?, ?> individual=
+			IdentityUtil.
+				personIndividual(representation,null);
+
 		Typed<Person> typedPerson=PersonMapper.toPerson(individual);
+
 		PersonConstraints.validate(typedPerson);
 
 		Person protoPerson=typedPerson.get();

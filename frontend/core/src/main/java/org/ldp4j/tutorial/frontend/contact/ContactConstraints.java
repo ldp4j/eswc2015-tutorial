@@ -31,8 +31,6 @@ import java.net.URI;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.constraints.Constraints;
@@ -57,15 +55,17 @@ final class ContactConstraints implements ContactVocabulary {
 		if(contact!=null) {
 			name=IdentityUtil.name(contact);
 		}
+
 		DataSet tmp=DataSetFactory.createDataSet(name);
 		ExternalIndividual individualIndividual = tmp.individual(URI.create(INDIVIDUAL),ExternalIndividual.class);
 		ExternalIndividual voiceIndividual      = tmp.individual(URI.create(VOICE),ExternalIndividual.class);
 		ExternalIndividual homeIndividual       = tmp.individual(URI.create(HOME),ExternalIndividual.class);
 		ExternalIndividual typeIndividual       = tmp.individual(URI.create(TYPE),ExternalIndividual.class);
+
 		Shape telephoneShape=
 			Constraints.
 				shape().
-					withLabel("telephone").
+					withLabel("TelephoneShape").
 					withComment("Contact telephone resource shape").
 					withPropertyConstraint(
 						Constraints.
@@ -75,6 +75,7 @@ final class ContactConstraints implements ContactVocabulary {
 						Constraints.
 							propertyConstraint(URI.create(NUMBER)).
 								withCardinality(Cardinality.mandatory()));
+
 		PropertyConstraint emailConstraint = null;
 		if(contact!=null) {
 			ExternalIndividual emailIndividual=
@@ -91,10 +92,11 @@ final class ContactConstraints implements ContactVocabulary {
 							propertyConstraint(URI.create(EMAIL)).
 								withCardinality(Cardinality.mandatory());
 		}
+
 		Shape contactShape=
 			Constraints.
 				shape().
-					withLabel("contact").
+					withLabel("ContactShape").
 					withComment("Contact resource shape").
 					withPropertyConstraint(
 						Constraints.
@@ -118,9 +120,10 @@ final class ContactConstraints implements ContactVocabulary {
 				Constraints.
 					constraints();
 		if(contact!=null) {
-			ManagedIndividualId contactIndividualId = ManagedIndividualId.createId(name, ContactHandler.ID);
-			ManagedIndividual contactIndividual = tmp.individual(contactIndividualId, ManagedIndividual.class);
-			constraints.withNodeShape(contactIndividual,contactShape);
+			constraints.
+				withNodeShape(
+					IdentityUtil.contactIndividual(tmp,contact),
+					contactShape);
 		} else {
 			constraints.withTypeShape(URI.create(INDIVIDUAL),contactShape);
 		}

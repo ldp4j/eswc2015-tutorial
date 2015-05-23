@@ -26,9 +26,10 @@
  */
 package org.ldp4j.tutorial.frontend.person;
 
+import java.util.Collection;
+
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
@@ -42,10 +43,11 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
-import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Serviceable;
 import org.ldp4j.tutorial.frontend.util.Typed;
 
@@ -67,17 +69,20 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 		super(service);
 	}
 
-	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		Person person = agendaService().getPerson(resource.name().id().toString());
+	private Person findPerson(String personId) throws UnknownResourceException {
+		Person person = agendaService().getPerson(personId);
 		if(person==null) {
-			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
+			throw unknownResource(personId,"Person");
 		}
 		return person;
 	}
 
 	@Override
 	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
-		Person person = findPerson(resource);
+		String personId = IdentityUtil.personId(resource);
+		trace("Requested person %s retrieval...",personId);
+		Person person = findPerson(personId);
+		info("Retrieved person %s: %s",personId,FormatUtil.toString(person));
 		return PersonMapper.toDataSet(person);
 	}
 
@@ -85,21 +90,18 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
 		String personId = IdentityUtil.personId(resource);
 		trace("Requested person %s deletion...",personId);
-		Person person=findPerson(resource);
+		Person person=findPerson(personId);
 		info("Deleting person %s...",personId);
+		Collection<Contact> contacts = agendaService().listPersonContacts(personId);
 		try {
 			agendaService().deletePerson(personId);
 			session.delete(resource);
 			session.saveChanges();
 			info("Deleted person %s : %s",personId,FormatUtil.toString(person));
+			for(Contact contact:contacts) {
+				info(" - Deleted contact %s",FormatUtil.toString(contact));
+			}
 		} catch (WriteSessionException e) {
-			// Recover if failed
-			agendaService().
-				createPerson(
-					personId,
-					person.getName(),
-					person.getLocation(),
-					person.getWorkplaceHomepage());
 			throw unexpectedFailure(e, "Person %s deletion failed",personId);
 		}
 	}
@@ -117,37 +119,25 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 		String personId = IdentityUtil.personId(resource);
 		trace("Requested person %s update using: %n%s",personId,content);
 
-		Person currentPerson=findPerson(resource);
+		Person currentPerson=findPerson(personId);
 
 		Individual<?,?> individual=
-			content.individualOfId(
-				ManagedIndividualId.
-					createId(resource.name(),PersonHandler.ID));
-		if(individual==null) {
-			throw unexpectedFailure("Could not find input data");
-		}
+			IdentityUtil.
+				personIndividual(content,currentPerson);
 
-		Typed<Person> typedPerson = PersonMapper.toPerson(individual);
-		PersonConstraints.validate(typedPerson);
-		PersonConstraints.checkConstraints(currentPerson, typedPerson);
+		Typed<Person> updatedPerson=PersonMapper.toPerson(individual);
 
-		Person updatedPerson=typedPerson.get();
+		PersonConstraints.validate(updatedPerson);
+		PersonConstraints.checkConstraints(currentPerson, updatedPerson);
 
-		String oldName=currentPerson.getName();
-		String oldLocation=currentPerson.getLocation();
-		String oldWorkplaceHomepage=currentPerson.getWorkplaceHomepage();
+		Person backupPerson = PersonMapper.clone(currentPerson);
+		PersonMapper.copy(updatedPerson.get(), currentPerson);
 		try {
-			currentPerson.setName(updatedPerson.getName());
-			currentPerson.setLocation(updatedPerson.getLocation());
-			currentPerson.setWorkplaceHomepage(updatedPerson.getWorkplaceHomepage());
 			session.modify(resource);
 			session.saveChanges();
 			info("Updated person %s : %s",personId,FormatUtil.toString(currentPerson));
 		} catch (WriteSessionException e) {
-			// Recover if failed
-			currentPerson.setName(oldName);
-			currentPerson.setLocation(oldLocation);
-			currentPerson.setWorkplaceHomepage(oldWorkplaceHomepage);
+			PersonMapper.copy(backupPerson, currentPerson);
 			throw unexpectedFailure(e, "Person %s update failed",personId);
 		}
 	}

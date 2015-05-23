@@ -31,8 +31,6 @@ import java.net.URI;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.constraints.Constraints;
@@ -52,19 +50,19 @@ final class PersonConstraints implements PersonVocabulary {
 	private PersonConstraints() {
 	}
 
-	private static Constraints createConstraints(Person currentPerson) {
+	private static Constraints createConstraints(Person person) {
 		Name<String> name=NamingScheme.getDefault().name("");
-		if(currentPerson!=null) {
-			name=IdentityUtil.name(currentPerson);
+		if(person!=null) {
+			name=IdentityUtil.name(person);
 		}
 
 		DataSet tmp=DataSetFactory.createDataSet(name);
 
 		PropertyConstraint emailConstraint = null;
-		if(currentPerson!=null) {
+		if(person!=null) {
 			ExternalIndividual emailIndividual=
 				tmp.individual(
-					URI.create(currentPerson.getEmail()),
+					URI.create(person.getEmail()),
 					ExternalIndividual.class);
 
 			emailConstraint=
@@ -78,9 +76,11 @@ final class PersonConstraints implements PersonVocabulary {
 						withCardinality(Cardinality.mandatory());
 		}
 
-		Shape shape=
+		Shape personShape=
 			Constraints.
 				shape().
+					withLabel("PersonShape").
+					withComment("Person resource shape").
 					withPropertyConstraint(
 						emailConstraint).
 					withPropertyConstraint(
@@ -95,15 +95,17 @@ final class PersonConstraints implements PersonVocabulary {
 						Constraints.
 							propertyConstraint(URI.create(WORKPLACE_HOMEPAGE)).
 								withCardinality(Cardinality.mandatory()));
+
 		Constraints constraints =
 			Constraints.
 				constraints();
-		if(currentPerson!=null) {
-			ManagedIndividualId personIndividualId=ManagedIndividualId.createId(name, PersonHandler.ID);
-			ManagedIndividual personIndividual=tmp.individual(personIndividualId,ManagedIndividual.class);
-			constraints.withNodeShape(personIndividual,shape);
+		if(person!=null) {
+			constraints.
+				withNodeShape(
+					IdentityUtil.personIndividual(tmp,person),
+					personShape);
 		} else {
-			constraints.withTypeShape(URI.create(PERSON),shape);
+			constraints.withTypeShape(URI.create(PERSON),personShape);
 		}
 		return constraints;
 	}
