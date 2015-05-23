@@ -43,8 +43,6 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Person;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Resource(
 	id=PersonHandler.ID,
@@ -55,21 +53,17 @@ import org.slf4j.LoggerFactory;
 			handler=ContactContainerHandler.class),
 	}
 )
-public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
+public class PersonHandler extends Serviceable implements ResourceHandler, Modifiable, Deletable {
 
 	public static final String ID="PersonHandler";
 	public static final String PERSON_CONTACTS="personContacts";
 
-	private final AgendaService service;
-
 	protected PersonHandler(AgendaService service) {
-		this.service = service;
+		super(service);
 	}
 
 	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		Person person = this.service.getPerson(resource.name().id().toString());
+		Person person = agendaService().getPerson(resource.name().id().toString());
 		if(person==null) {
 			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
 		}
@@ -84,31 +78,55 @@ public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
+		String personId = AgendaApplicationUtils.personId(resource);
+		trace("Requested person %s deletion...",personId);
 		Person person=findPerson(resource);
-		LOGGER.info("Deleting person {}...",AgendaApplicationHelper.toString(person));
+		info("Deleting person %s...",personId);
 		try {
-			this.service.deletePerson(person.getEmail());
+			agendaService().deletePerson(personId);
 			session.delete(resource);
 			session.saveChanges();
-			LOGGER.info("Deleted person {}.",resource.name());
+			info("Deleted person %s : %s",personId,AgendaApplicationUtils.toString(person));
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			this.service.createPerson(person.getEmail(),person.getName(),person.getLocation(),person.getWorkplaceHomepage());
-			LOGGER.error("Person "+resource.name()+" deletion failed ",e);
-			throw new ApplicationRuntimeException("Person deletion failed",e);
+			agendaService().
+				createPerson(
+					personId,
+					person.getName(),
+					person.getLocation(),
+					person.getWorkplaceHomepage());
+			throw unexpectedFailure(e, "Person %s deletion failed",personId);
 		}
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws UnknownResourceException, UnsupportedContentException, InconsistentContentException, ApplicationRuntimeException {
+	public void update(
+			ResourceSnapshot resource,
+			DataSet content,
+			WriteSession session)
+					throws
+						UnknownResourceException,
+						UnsupportedContentException,
+						InconsistentContentException,
+						ApplicationRuntimeException {
+		String personId = AgendaApplicationUtils.personId(resource);
+		trace("Requested person %s update using: %n%s",personId,content);
+
 		Person currentPerson=findPerson(resource);
 
-		Individual<?,?> individual = content.individualOfId(ManagedIndividualId.createId(resource.name(), PersonHandler.ID));
+		Individual<?,?> individual=
+			content.individualOfId(
+				ManagedIndividualId.
+					createId(resource.name(),PersonHandler.ID));
 		if(individual==null) {
-			throw new ApplicationRuntimeException("Could not find input data");
+			throw unexpectedFailure("Could not find input data");
 		}
 
-		Person updatedPerson=PersonMapper.enforceConsistency(individual, currentPerson);
+		Typed<Person> typedPerson = PersonMapper.toPerson(individual);
+		PersonConstraints.validate(typedPerson);
+		PersonConstraints.checkConstraints(currentPerson, typedPerson);
+
+		Person updatedPerson=typedPerson.get();
 
 		String oldName=currentPerson.getName();
 		String oldLocation=currentPerson.getLocation();
@@ -119,11 +137,13 @@ public class PersonHandler implements ResourceHandler, Modifiable, Deletable {
 			currentPerson.setWorkplaceHomepage(updatedPerson.getWorkplaceHomepage());
 			session.modify(resource);
 			session.saveChanges();
+			info("Updated person %s : %s",personId,AgendaApplicationUtils.toString(currentPerson));
 		} catch (WriteSessionException e) {
+			// Recover if failed
 			currentPerson.setName(oldName);
 			currentPerson.setLocation(oldLocation);
 			currentPerson.setWorkplaceHomepage(oldWorkplaceHomepage);
-			throw new IllegalStateException("Person update failed",e);
+			throw unexpectedFailure(e, "Person %s update failed",personId);
 		}
 	}
 

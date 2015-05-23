@@ -73,8 +73,14 @@ public abstract class Serviceable {
 		return new ApplicationRuntimeException(errorMessage,failure);
 	}
 
+	protected final ApplicationRuntimeException unexpectedFailure(String message, Object... args) {
+		String result = String.format(message,args);
+		this.logger.error(result);
+		return new ApplicationRuntimeException(result);
+	}
+
 	protected final UnknownResourceException unknownResource(Object resourceId, String resourceType) {
-		String errorMessage = String.format("Could not find %s for account ",resourceType,resourceId);
+		String errorMessage = String.format("Could not find %s resource for %s",resourceType,resourceId);
 		this.logger.error(errorMessage);
 		return new UnknownResourceException(errorMessage);
 	}

@@ -33,11 +33,8 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualHelper;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.tutorial.application.api.Contact;
 
@@ -46,10 +43,23 @@ import com.google.common.base.Optional;
 public final class ContactMapper implements ContactVocabulary {
 
 	private static final class MutableContact implements Contact {
+
 		private String fullName;
 		private String url;
 		private String email;
 		private String telephone;
+
+		private MutableContact() {
+		}
+
+		private MutableContact(Contact contact) {
+			this();
+			setEmail(contact.getEmail());
+			setFullName(contact.getFullName());
+			setTelephone(contact.getTelephone());
+			setUrl(contact.getUrl());
+		}
+
 		@Override
 		public String getFullName() {
 			return fullName;
@@ -87,73 +97,38 @@ public final class ContactMapper implements ContactVocabulary {
 	private ContactMapper() {
 	}
 
-	private static <T> T firstLiteralValue(Individual<?, ?> individual, String propertyURI, final Class<? extends T> clazz) {
-		return
-			DataSetUtils.
-				newHelper(individual).
-					property(propertyURI).
-						firstValue(clazz);
-	}
-
-	private static URI firstIndividualValue(Individual<?, ?> individual, String propertyURI) {
-		return
-			DataSetUtils.
-				newHelper(individual).
-					property(propertyURI).
-						firstIndividual(ExternalIndividual.class);
-	}
-
-	private static Set<URI> types(Individual<?,?> individual) {
-		return
-			DataSetUtils.
-				newHelper(individual).
-					types();
-	}
-
-	private static Name<String> telephoneName(Contact contact) {
-		return NamingScheme.getDefault().name(contact.getEmail(),"telephone");
-	}
-
-	public static Name<String> contactName(Contact contact) {
-		return NamingScheme.getDefault().name(contact.getEmail());
-	}
-
 	public static Typed<Contact> toContact(Individual<?,?> individual) {
 		MutableContact contact = new MutableContact();
 		Typed<Contact> result = Typed.<Contact>create(contact);
 
-		for(URI type:types(individual)) {
+		Mapper contactMapper=Mapper.create(individual);
+
+		for(URI type:contactMapper.types()) {
 			result.withType(type.toString());
 		}
 
-		contact.setFullName(firstLiteralValue(individual,FULL_NAME,String.class));
+		contact.setFullName(contactMapper.literal(FULL_NAME,String.class));
 
-		Optional<URI> url = Optional.fromNullable(firstIndividualValue(individual,URL));
-		contact.setUrl(url.isPresent()?url.get().toString():null);
+		Optional<URI> url = contactMapper.individual(URL);
+		contact.setUrl(Mapper.toStringOrNull(url));
 
-		Optional<URI> email= Optional.fromNullable(firstIndividualValue(individual,EMAIL));
-		contact.setEmail(email.isPresent()?email.get().toString():null);
+		Optional<URI> email=contactMapper.individual(EMAIL);
+		contact.setEmail(Mapper.toStringOrNull(email));
 
-		IndividualHelper helper =
-			DataSetUtils.
-				newHelper(individual).
-					property(TELEPHONE).
-						firstIndividual();
+		Mapper telephoneMapper=contactMapper.individualMapper(TELEPHONE);
 
-		if(helper!=null) {
-			Set<URI> types = helper.types();
-			if(types.contains(URI.create(VOICE)) && types.contains(URI.create(HOME))) {
-				Optional<URI> number = Optional.fromNullable(helper.property(NUMBER).firstIndividual(ExternalIndividual.class));
-				contact.setTelephone(number.isPresent()?number.get().toString():null);
-			}
+		Set<URI> types = telephoneMapper.types();
+		if(types.contains(URI.create(VOICE)) && types.contains(URI.create(HOME))) {
+			Optional<URI> number = telephoneMapper.individual(NUMBER);
+			contact.setTelephone(Mapper.toStringOrNull(number));
 		}
 
 		return result;
 	}
 
 	public static DataSet toDataSet(Contact contact) {
-		Name<String> contactName=contactName(contact);
-		Name<?> telephoneName=telephoneName(contact);
+		Name<String> contactName=AgendaApplicationUtils.name(contact);
+		Name<?> telephoneName=AgendaApplicationUtils.name(contact,"telephone");
 
 		DataSet dataSet=DataSetFactory.createDataSet(contactName);
 
@@ -181,6 +156,10 @@ public final class ContactMapper implements ContactVocabulary {
 					withIndividual(contact.getTelephone());
 
 		return dataSet;
+	}
+
+	public static Contact clone(Contact contact) {
+		return new MutableContact(contact);
 	}
 
 }

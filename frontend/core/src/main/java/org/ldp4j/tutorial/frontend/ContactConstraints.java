@@ -30,9 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
@@ -55,7 +53,7 @@ public final class ContactConstraints implements ContactVocabulary {
 	private static Constraints createConstraints(Contact contact) {
 		Name<?> name=NamingScheme.getDefault().name("");
 		if(contact!=null) {
-			name=ContactMapper.contactName(contact);
+			name=AgendaApplicationUtils.name(contact);
 		}
 		DataSet tmp=DataSetFactory.createDataSet(name);
 		ExternalIndividual individualIndividual = tmp.individual(URI.create(INDIVIDUAL),ExternalIndividual.class);
@@ -77,11 +75,14 @@ public final class ContactConstraints implements ContactVocabulary {
 								withCardinality(Cardinality.mandatory()));
 		PropertyConstraint emailConstraint = null;
 		if(contact!=null) {
+			ExternalIndividual emailIndividual=
+				tmp.individual(
+					URI.create(contact.getEmail()),
+					ExternalIndividual.class);
 			emailConstraint=
 				Constraints.
 					propertyConstraint(URI.create(EMAIL)).
-						withValue(
-							DataSetUtils.newLiteral(contact.getEmail()));
+						withValue(emailIndividual);
 		} else {
 			emailConstraint=
 					Constraints.
@@ -124,30 +125,8 @@ public final class ContactConstraints implements ContactVocabulary {
 		return constraints;
 	}
 
-	@Deprecated
-	private static Constraints createConstraints(Individual<?, ?> individual, Contact contact) {
-		return createConstraints(contact);
-	}
-
-	@Deprecated
-	public static Contact enforceConsistency(Individual<?, ?> individual) throws UnsupportedContentException {
-		Typed<Contact> metaContact = ContactMapper.toContact(individual);
-		Contact contact = metaContact.get();
-		if(!metaContact.hasType(INDIVIDUAL) || contact.getEmail()==null || contact.getUrl()==null || contact.getFullName()==null || contact.getTelephone()==null) {
-			throw new UnsupportedContentException("Incomplete contact definition",createConstraints(individual,null));
-		}
-		return contact;
-	}
-
-	@Deprecated
-	public static Contact checkConstraints(Individual<?, ?> individual, Contact currentContact) throws InconsistentContentException, UnsupportedContentException {
-		Contact updatedContact = enforceConsistency(individual);
-		checkConstraints(currentContact, updatedContact);
-		return updatedContact;
-	}
-
-	public static void checkConstraints(Contact currentContact, Contact updatedContact) throws InconsistentContentException {
-		if(!Objects.equal(currentContact.getEmail(),updatedContact.getEmail())) {
+	public static void checkConstraints(Contact currentContact, Typed<Contact> updatedContact) throws InconsistentContentException {
+		if(!Objects.equal(currentContact.getEmail(),updatedContact.get().getEmail())) {
 			throw new InconsistentContentException("Contact email cannot be modified",createConstraints(currentContact));
 		}
 	}

@@ -26,29 +26,35 @@
  */
 package org.ldp4j.tutorial.frontend;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.FormatUtils;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
+import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 
 import com.google.common.base.Objects;
 
-final class AgendaApplicationHelper {
+final class AgendaApplicationUtils {
 
-	private AgendaApplicationHelper() {
+	private AgendaApplicationUtils() {
 	}
 
-	static String format(ManagedIndividualId id) {
+	static String toString(ManagedIndividualId id) {
 		return String.format("%s {Managed by: %s}",id.name(),id.managerId());
 	}
 
-	static String format(Value value) {
+	static String toString(Value value) {
 		final AtomicReference<String> result=new AtomicReference<String>();
 		value.accept(
 			new ValueVisitor() {
@@ -87,6 +93,32 @@ final class AgendaApplicationHelper {
 						add("location",contact.getLocation()).
 						add("workplaceHomepage",contact.getWorkplaceHomepage()).
 						toString();
+	}
+
+	public static String personId(ResourceSnapshot resource) {
+		Serializable id = resource.name().id();
+		checkState(id instanceof String,"Person identifier should be a string not a %s",id.getClass().getCanonicalName());
+		return (String)id;
+	}
+
+	public static ContactId contactId(ResourceSnapshot resource) {
+		Serializable contactId = resource.name().id();
+		checkState(contactId instanceof String,"Contact identifier should be a string not a %s",contactId.getClass().getCanonicalName());
+		ResourceSnapshot contactsResource = resource.parent();
+		checkState(contactsResource!=null,"Could not find contact's parent resource");
+		ResourceSnapshot personResource = contactsResource.parent();
+		checkState(personResource!=null,"Could not find contact's related person resource");
+		Serializable personId = personResource.name().id();
+		checkState(personId instanceof String,"Person identifier should be a string not a %s",personId.getClass().getCanonicalName());
+		return ContactId.create((String)personId,(String)contactId);
+	}
+
+	public static Name<String> name(Contact contact, String... subKeys) {
+		return NamingScheme.getDefault().name(contact.getEmail(),subKeys);
+	}
+
+	public static Name<String> name(Person person, String... subKeys) {
+		return NamingScheme.getDefault().name(person.getEmail(),subKeys);
 	}
 
 

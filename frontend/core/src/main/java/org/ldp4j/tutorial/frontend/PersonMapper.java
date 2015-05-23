@@ -26,7 +26,6 @@
  */
 package org.ldp4j.tutorial.frontend;
 
-import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
@@ -37,19 +36,12 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.data.constraints.Constraints.Cardinality;
-import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.ext.InconsistentContentException;
-import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Person;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
-public final class PersonMapper {
+public final class PersonMapper implements PersonVocabulary {
 
 	private static final class MutablePerson implements Person {
 		private String email;
@@ -90,12 +82,6 @@ public final class PersonMapper {
 		}
 	}
 
-	private static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
-	private static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
-	private static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
-	private static final String NAME = "http://xmlns.com/foaf/0.1/name";
-	private static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
-
 	private PersonMapper() {
 	}
 
@@ -134,16 +120,8 @@ public final class PersonMapper {
 						firstIndividual(ExternalIndividual.class);
 	}
 
-	public static Name<String> personName(Person person) {
-		return NamingScheme.getDefault().name(person.getEmail());
-	}
-
-	public static Name<String> contactsName(Person person) {
-		return NamingScheme.getDefault().name(person.getEmail(),"contacts");
-	}
-
 	public static DataSet toDataSet(Person person) {
-		Name<String> personName=personName(person);
+		Name<String> personName=AgendaApplicationUtils.name(person);
 
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
 
@@ -156,92 +134,20 @@ public final class PersonMapper {
 		return dataSet;
 	}
 
-	public static Person toPerson(Individual<?,?> self) {
-		MutablePerson result = new MutablePerson();
-		Optional<URI> email = Optional.fromNullable(firstIndividualValue(self,EMAIL));
-		result.setEmail(email.isPresent()?email.get().toString():null);
-		result.setName(firstLiteralValue(self,NAME,String.class));
-		Optional<URI> location = Optional.fromNullable(firstIndividualValue(self,LOCATION));
-		result.setLocation(location.isPresent()?location.get().toString():null);
-		Optional<URI> workplaceHomepage= Optional.fromNullable(firstIndividualValue(self,WORKPLACE_HOMEPAGE));
-		result.setWorkplaceHomepage(workplaceHomepage.isPresent()?workplaceHomepage.get().toString():null);
+	public static Typed<Person> toPerson(Individual<?,?> individual) {
+		MutablePerson person = new MutablePerson();
+		Typed<Person> result=Typed.<Person>create(person);
+		for(URI uri:Mapper.create(individual).types()) {
+			result.withType(uri.toString());
+		}
+		Optional<URI> email = Optional.fromNullable(firstIndividualValue(individual,EMAIL));
+		person.setEmail(email.isPresent()?email.get().toString():null);
+		person.setName(firstLiteralValue(individual,NAME,String.class));
+		Optional<URI> location = Optional.fromNullable(firstIndividualValue(individual,LOCATION));
+		person.setLocation(location.isPresent()?location.get().toString():null);
+		Optional<URI> workplaceHomepage= Optional.fromNullable(firstIndividualValue(individual,WORKPLACE_HOMEPAGE));
+		person.setWorkplaceHomepage(workplaceHomepage.isPresent()?workplaceHomepage.get().toString():null);
 		return result;
-	}
-
-	public static Person enforceConsistency(Individual<?, ?> individual) throws UnsupportedContentException {
-		Optional<URI> type = Optional.fromNullable(firstIndividualValue(individual,RDF.TYPE.qualifiedEntityName()));
-		Person newPerson = toPerson(individual);
-		if(!type.isPresent() || !type.get().toString().equals(PERSON) || newPerson.getEmail()==null || newPerson.getName()==null || newPerson.getLocation()==null || newPerson.getWorkplaceHomepage()==null) {
-			Shape shape=
-				Constraints.
-					shape().
-						withLabel("person").
-						withComment("Person resource shape").
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(EMAIL)).
-									withCardinality(Cardinality.mandatory())).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(NAME)).
-									withCardinality(Cardinality.mandatory())).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(LOCATION)).
-									withCardinality(Cardinality.mandatory())).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(WORKPLACE_HOMEPAGE)).
-									withCardinality(Cardinality.mandatory()));
-			Constraints constraints =
-				Constraints.
-					constraints().
-						withTypeShape(URI.create(PERSON),shape);
-			throw new UnsupportedContentException("Incomplete person definition",constraints);
-		}
-		return newPerson;
-	}
-
-	public static Person enforceConsistency(Individual<?, ?> individual, Person currentPerson) throws InconsistentContentException {
-		Person updatedPerson = toPerson(individual);
-		if(!Objects.equal(currentPerson.getEmail(),updatedPerson.getEmail())) {
-			DataSet tmp =
-					DataSetFactory.createDataSet(individual.dataSet().name());
-				ExternalIndividual emailIndividual = tmp.individual(URI.create(currentPerson.getEmail()),ExternalIndividual.class);
-			Shape shape=
-				Constraints.
-					shape().
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(EMAIL)).
-									withValue(emailIndividual)).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(NAME)).
-									withCardinality(Cardinality.mandatory())).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(LOCATION)).
-									withCardinality(Cardinality.mandatory())).
-						withPropertyConstraint(
-							Constraints.
-								propertyConstraint(URI.create(WORKPLACE_HOMEPAGE)).
-									withCardinality(Cardinality.mandatory()));
-			Constraints constraints =
-				Constraints.
-					constraints().
-						withNodeShape(individual,shape);
-			throw new InconsistentContentException("Person account cannot be modified",constraints);
-		}
-		return updatedPerson;
-	}
-
-	public static String personId(Name<?> name2) {
-		Serializable id = name2.id();
-		if(id instanceof String) {
-			return (String)id;
-		}
-		throw new AssertionError("Person identifiers must be Strings, not "+id.getClass().getCanonicalName());
 	}
 
 }

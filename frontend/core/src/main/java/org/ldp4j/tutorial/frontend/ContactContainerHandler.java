@@ -59,7 +59,7 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 	}
 
 	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		String id = PersonMapper.personId(resource.name());
+		String id = AgendaApplicationUtils.personId(resource);
 		Person person = agendaService().getPerson(id);
 		if(person==null) {
 			throw unknownResource(id, "person");
@@ -81,36 +81,38 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 						UnknownResourceException,
 						UnsupportedContentException,
 						ApplicationRuntimeException {
-		trace("Creating contact from: %n%s",representation);
+		trace("Requested contact creation from: %n%s",representation);
 
 		ResourceSnapshot parent = container.parent();
 		Person person=findPerson(parent);
 
 		Individual<?, ?> individual = DataSetUtils.newHelper(representation).self();
 
-		Typed<Contact> tContact=ContactMapper.toContact(individual);
-		ContactConstraints.validate(tContact);
+		Typed<Contact> typedContact=ContactMapper.toContact(individual);
+		ContactConstraints.validate(typedContact);
 
-		Contact protoContact=tContact.get();
+		Contact protoContact=typedContact.get();
 
-		Name<?> contactName=ContactMapper.contactName(protoContact);
+		Name<?> contactName=AgendaApplicationUtils.name(protoContact);
 
 		Contact contact=
 			agendaService().
-					addContactToPerson(
-						person.getEmail(),
-						protoContact.getFullName(),
-						protoContact.getUrl(),
-						protoContact.getEmail(),
-						protoContact.getTelephone());
+				addContactToPerson(
+					person.getEmail(),
+					protoContact.getFullName(),
+					protoContact.getUrl(),
+					protoContact.getEmail(),
+					protoContact.getTelephone());
 		try {
 			ResourceSnapshot contactResource=container.addMember(contactName);
-			info("Created contact %s for person %s",contact.getEmail(),person.getEmail());
+			ContactId contactId=AgendaApplicationUtils.contactId(contactResource);
 			session.saveChanges();
+			info("Created contact %s: %s",contactId,AgendaApplicationUtils.toString(contact),person.getEmail());
 			return contactResource;
 		} catch (WriteSessionException e) {
-			agendaService().deletePersonContact(person.getEmail(),contact.getEmail());
-			throw unexpectedFailure(e, "Could not create contact %s",contact);
+			agendaService().
+				deletePersonContact(person.getEmail(),contact.getEmail());
+			throw unexpectedFailure(e, "Could not create contact %s",AgendaApplicationUtils.toString(contact));
 		}
 	}
 
