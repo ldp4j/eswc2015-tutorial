@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.contact;
 
 import java.net.URI;
 import java.util.Set;
@@ -37,10 +37,13 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.tutorial.application.api.Contact;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.Mapper;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 import com.google.common.base.Optional;
 
-public final class ContactMapper implements ContactVocabulary {
+final class ContactMapper implements ContactVocabulary {
 
 	private static final class MutableContact implements Contact {
 
@@ -127,8 +130,8 @@ public final class ContactMapper implements ContactVocabulary {
 	}
 
 	public static DataSet toDataSet(Contact contact) {
-		Name<String> contactName=AgendaApplicationUtils.name(contact);
-		Name<?> telephoneName=AgendaApplicationUtils.name(contact,"telephone");
+		Name<String> contactName=IdentityUtil.name(contact);
+		Name<?> telephoneName=IdentityUtil.name(contact,"telephone");
 
 		DataSet dataSet=DataSetFactory.createDataSet(contactName);
 

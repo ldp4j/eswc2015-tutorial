@@ -24,40 +24,23 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.contact;
 
-import com.google.common.base.Objects;
+import org.ldp4j.application.domain.RDF;
 
-public final class ContactId {
+interface ContactVocabulary {
 
-	private final String person;
-	private final String email;
+	static final String TYPE       = RDF.TYPE.qualifiedEntityName();
 
-	private ContactId(String person, String email) {
-		this.person=person;
-		this.email=email;
-	}
+	static final String INDIVIDUAL = "http://www.w3.org/2006/vcard/ns#Individual";
+	static final String HOME       = "http://www.w3.org/2006/vcard/ns#Home";
+	static final String VOICE      = "http://www.w3.org/2006/vcard/ns#Voice";
 
-	public String getPerson() {
-		return person;
-	}
+	static final String URL        = "http://www.w3.org/2006/vcard/ns#hasURL";
+	static final String EMAIL      = "http://www.w3.org/2006/vcard/ns#hasEmail";
+	static final String FULL_NAME  = "http://www.w3.org/2006/vcard/ns#fn";
+	static final String TELEPHONE  = "http://www.w3.org/2006/vcard/ns#hasTelephone";
+	static final String NUMBER     = "http://www.w3.org/2006/vcard/ns#hasValue";
 
-	public String getEmail() {
-		return email;
-	}
-
-	@Override
-	public String toString() {
-		return
-			Objects.
-				toStringHelper(getClass()).
-					add("person",this.person).
-					add("email",this.email).
-					toString();
-	}
-
-	public static ContactId create(String person, String email) {
-		return new ContactId(person, email);
-	}
 
 }

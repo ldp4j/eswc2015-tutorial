@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.util;
 
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.UnknownResourceException;

@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.contact;
 
 import java.net.URI;
 
@@ -42,10 +42,12 @@ import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Contact;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 import com.google.common.base.Objects;
 
-public final class ContactConstraints implements ContactVocabulary {
+final class ContactConstraints implements ContactVocabulary {
 
 	private ContactConstraints() {
 	}
@@ -53,7 +55,7 @@ public final class ContactConstraints implements ContactVocabulary {
 	private static Constraints createConstraints(Contact contact) {
 		Name<?> name=NamingScheme.getDefault().name("");
 		if(contact!=null) {
-			name=AgendaApplicationUtils.name(contact);
+			name=IdentityUtil.name(contact);
 		}
 		DataSet tmp=DataSetFactory.createDataSet(name);
 		ExternalIndividual individualIndividual = tmp.individual(URI.create(INDIVIDUAL),ExternalIndividual.class);

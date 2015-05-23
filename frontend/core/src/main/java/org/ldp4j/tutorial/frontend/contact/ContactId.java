@@ -24,15 +24,40 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.contact;
 
-public interface PersonVocabulary {
+import com.google.common.base.Objects;
 
-	static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
+public final class ContactId {
 
-	static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
-	static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
-	static final String NAME = "http://xmlns.com/foaf/0.1/name";
-	static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
+	private final String person;
+	private final String email;
+
+	private ContactId(String person, String email) {
+		this.person=person;
+		this.email=email;
+	}
+
+	public String getPerson() {
+		return person;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("person",this.person).
+					add("email",this.email).
+					toString();
+	}
+
+	public static ContactId create(String person, String email) {
+		return new ContactId(person, email);
+	}
 
 }

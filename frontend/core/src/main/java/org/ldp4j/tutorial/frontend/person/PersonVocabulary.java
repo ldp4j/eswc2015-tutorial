@@ -24,23 +24,15 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.person;
 
-import org.ldp4j.application.domain.RDF;
+interface PersonVocabulary {
 
-public interface ContactVocabulary {
+	static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
 
-	static final String TYPE       = RDF.TYPE.qualifiedEntityName();
-
-	static final String INDIVIDUAL = "http://www.w3.org/2006/vcard/ns#Individual";
-	static final String HOME       = "http://www.w3.org/2006/vcard/ns#Home";
-	static final String VOICE      = "http://www.w3.org/2006/vcard/ns#Voice";
-
-	static final String URL        = "http://www.w3.org/2006/vcard/ns#hasURL";
-	static final String EMAIL      = "http://www.w3.org/2006/vcard/ns#hasEmail";
-	static final String FULL_NAME  = "http://www.w3.org/2006/vcard/ns#fn";
-	static final String TELEPHONE  = "http://www.w3.org/2006/vcard/ns#hasTelephone";
-	static final String NUMBER     = "http://www.w3.org/2006/vcard/ns#hasValue";
-
+	static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
+	static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
+	static final String NAME = "http://xmlns.com/foaf/0.1/name";
+	static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
 
 }

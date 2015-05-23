@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.util;
 
 import java.net.URI;
 import java.util.Set;
@@ -72,7 +72,7 @@ public final class Mapper {
 		return new Mapper(this.helper.property(propertyURI).firstIndividual());
 	}
 
-	static String toStringOrNull(Optional<URI> individual) {
+	public static String toStringOrNull(Optional<URI> individual) {
 		return individual.isPresent()?individual.get().toString():null;
 	}
 

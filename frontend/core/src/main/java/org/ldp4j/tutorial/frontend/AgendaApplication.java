@@ -35,10 +35,14 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
 import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
+import org.ldp4j.tutorial.frontend.contact.ContactHandler;
+import org.ldp4j.tutorial.frontend.person.PersonContainerHandler;
+import org.ldp4j.tutorial.frontend.person.PersonHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgendaApplication extends Application<Configuration> {
+public final class AgendaApplication extends Application<Configuration> {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaApplication.class);
 
@@ -49,7 +53,10 @@ public class AgendaApplication extends Application<Configuration> {
 	private final Name<String> personContainerName;
 
 	public AgendaApplication() {
-		this.personContainerName=NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
+		this.personContainerName=
+			NamingScheme.
+				getDefault().
+					name(PERSON_CONTAINER_NAME);
 	}
 
 	@Override
@@ -63,7 +70,11 @@ public class AgendaApplication extends Application<Configuration> {
 		bootstrap.addHandler(new ContactContainerHandler(service));
 		bootstrap.addHandler(new ContactHandler(service));
 
-		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
+		environment.
+			publishResource(
+				this.personContainerName,
+				PersonContainerHandler.class,
+				ROOT_PERSON_CONTAINER_PATH);
 
 		LOGGER.info("Agenda Application configuration completed.");
 	}

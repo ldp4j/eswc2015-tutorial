@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.person;
 
 import java.net.URI;
 
@@ -42,10 +42,12 @@ import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 import com.google.common.base.Objects;
 
-public final class PersonConstraints implements PersonVocabulary {
+final class PersonConstraints implements PersonVocabulary {
 
 	private PersonConstraints() {
 	}
@@ -53,7 +55,7 @@ public final class PersonConstraints implements PersonVocabulary {
 	private static Constraints createConstraints(Person currentPerson) {
 		Name<String> name=NamingScheme.getDefault().name("");
 		if(currentPerson!=null) {
-			name=AgendaApplicationUtils.name(currentPerson);
+			name=IdentityUtil.name(currentPerson);
 		}
 
 		DataSet tmp=DataSetFactory.createDataSet(name);

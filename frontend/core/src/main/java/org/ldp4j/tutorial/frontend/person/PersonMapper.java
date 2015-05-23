@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.person;
 
 import java.net.URI;
 
@@ -38,10 +38,13 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.Mapper;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 import com.google.common.base.Optional;
 
-public final class PersonMapper implements PersonVocabulary {
+final class PersonMapper implements PersonVocabulary {
 
 	private static final class MutablePerson implements Person {
 		private String email;
@@ -121,7 +124,7 @@ public final class PersonMapper implements PersonVocabulary {
 	}
 
 	public static DataSet toDataSet(Person person) {
-		Name<String> personName=AgendaApplicationUtils.name(person);
+		Name<String> personName=IdentityUtil.name(person);
 
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
 

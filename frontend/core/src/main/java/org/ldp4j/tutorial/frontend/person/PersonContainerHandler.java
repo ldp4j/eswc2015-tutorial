@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.person;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
@@ -41,6 +41,11 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.Serviceable;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 @BasicContainer(
 	id = PersonContainerHandler.ID,
@@ -88,20 +93,20 @@ public class PersonContainerHandler extends Serviceable implements ContainerHand
 
 		try {
 			ResourceSnapshot personResource=
-				container.addMember(AgendaApplicationUtils.name(person));
+				container.addMember(IdentityUtil.name(person));
 			personResource.
 				createAttachedResource(
 					ContainerSnapshot.class,
 					PersonHandler.PERSON_CONTACTS,
-					AgendaApplicationUtils.name(person,"contacts"),
+					IdentityUtil.name(person,"contacts"),
 					ContactContainerHandler.class);
 			session.saveChanges();
-			info("Created person %s : %s",person.getEmail(),AgendaApplicationUtils.toString(person));
+			info("Created person %s : %s",person.getEmail(),FormatUtil.toString(person));
 			return personResource;
 		} catch (WriteSessionException e) {
 			agendaService().
 				deletePerson(person.getEmail());
-			throw unexpectedFailure(e,"Could not create person %s",AgendaApplicationUtils.toString(person));
+			throw unexpectedFailure(e,"Could not create person %s",FormatUtil.toString(person));
 		}
 	}
 

@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.person;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
@@ -36,61 +36,71 @@ import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
+import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
-import org.ldp4j.tutorial.application.api.Contact;
+import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.Serviceable;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 @Resource(
-	id=ContactHandler.ID
+	id=PersonHandler.ID,
+	attachments={
+		@Attachment(
+			id=PersonHandler.PERSON_CONTACTS,
+			path="contacts/",
+			handler=ContactContainerHandler.class),
+	}
 )
-public class ContactHandler extends Serviceable implements ResourceHandler, Modifiable, Deletable {
+public class PersonHandler extends Serviceable implements ResourceHandler, Modifiable, Deletable {
 
-	public static final String ID="ContactHandler";
+	public static final String ID="PersonHandler";
+	public static final String PERSON_CONTACTS="personContacts";
 
-	protected ContactHandler(AgendaService service) {
+	public PersonHandler(AgendaService service) {
 		super(service);
 	}
 
-	private Contact findContact(ContactId id) throws UnknownResourceException {
-		Contact contact = agendaService().getPersonContact(id.getPerson(),id.getEmail());
-		if(contact==null) {
-			super.unknownResource(id,"Contact");
+	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
+		Person person = agendaService().getPerson(resource.name().id().toString());
+		if(person==null) {
+			throw new UnknownResourceException("Could not find person for account '"+resource.name().id());
 		}
-		return contact;
+		return person;
 	}
 
 	@Override
 	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
-		ContactId contactId = AgendaApplicationUtils.contactId(resource);
-		trace("Requested contact %s retrieval",contactId);
-		Contact contact = findContact(contactId);
-		info("Retrieved contact %s: %s",contactId,AgendaApplicationUtils.toString(contact));
-		return ContactMapper.toDataSet(contact);
+		Person person = findPerson(resource);
+		return PersonMapper.toDataSet(person);
 	}
 
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
-		ContactId contactId = AgendaApplicationUtils.contactId(resource);
-		trace("Requested contact %s deletion",contactId);
-		Contact currentContact = findContact(contactId);
-		agendaService().deletePersonContact(contactId.getPerson(),contactId.getEmail());
+		String personId = IdentityUtil.personId(resource);
+		trace("Requested person %s deletion...",personId);
+		Person person=findPerson(resource);
+		info("Deleting person %s...",personId);
 		try {
+			agendaService().deletePerson(personId);
 			session.delete(resource);
 			session.saveChanges();
-			info("Deleted contact %s: %s",contactId,AgendaApplicationUtils.toString(currentContact));
+			info("Deleted person %s : %s",personId,FormatUtil.toString(person));
 		} catch (WriteSessionException e) {
 			// Recover if failed
 			agendaService().
-				addContactToPerson(
-					contactId.getPerson(),
-					currentContact.getFullName(),
-					currentContact.getUrl(),
-					currentContact.getEmail(),
-					currentContact.getTelephone());
-			throw unexpectedFailure(e, "Contact %s deletion failed",contactId);
+				createPerson(
+					personId,
+					person.getName(),
+					person.getLocation(),
+					person.getWorkplaceHomepage());
+			throw unexpectedFailure(e, "Person %s deletion failed",personId);
 		}
 	}
 
@@ -104,40 +114,41 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 						UnsupportedContentException,
 						InconsistentContentException,
 						ApplicationRuntimeException {
-		ContactId contactId = AgendaApplicationUtils.contactId(resource);
-		trace("Requested contact %s updated using: %n%s",contactId,content);
+		String personId = IdentityUtil.personId(resource);
+		trace("Requested person %s update using: %n%s",personId,content);
 
-		Contact currentContact = findContact(contactId);
+		Person currentPerson=findPerson(resource);
 
 		Individual<?,?> individual=
-			content.
-				individualOfId(
-					ManagedIndividualId.
-						createId(resource.name(), ContactHandler.ID));
+			content.individualOfId(
+				ManagedIndividualId.
+					createId(resource.name(),PersonHandler.ID));
 		if(individual==null) {
 			throw unexpectedFailure("Could not find input data");
 		}
 
-		Typed<Contact> typedContact=ContactMapper.toContact(individual);
-		ContactConstraints.validate(typedContact);
-		ContactConstraints.checkConstraints(currentContact,typedContact);
+		Typed<Person> typedPerson = PersonMapper.toPerson(individual);
+		PersonConstraints.validate(typedPerson);
+		PersonConstraints.checkConstraints(currentPerson, typedPerson);
 
-		Contact backupContact=ContactMapper.clone(currentContact);
+		Person updatedPerson=typedPerson.get();
 
-		Contact updatedContact = typedContact.get();
-		currentContact.setFullName(updatedContact.getFullName());
-		currentContact.setTelephone(updatedContact.getTelephone());
-		currentContact.setUrl(updatedContact.getUrl());
+		String oldName=currentPerson.getName();
+		String oldLocation=currentPerson.getLocation();
+		String oldWorkplaceHomepage=currentPerson.getWorkplaceHomepage();
 		try {
+			currentPerson.setName(updatedPerson.getName());
+			currentPerson.setLocation(updatedPerson.getLocation());
+			currentPerson.setWorkplaceHomepage(updatedPerson.getWorkplaceHomepage());
 			session.modify(resource);
 			session.saveChanges();
-			info("Updated contact %s : %s",AgendaApplicationUtils.toString(currentContact));
+			info("Updated person %s : %s",personId,FormatUtil.toString(currentPerson));
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			currentContact.setFullName(backupContact.getFullName());
-			currentContact.setTelephone(backupContact.getTelephone());
-			currentContact.setUrl(backupContact.getUrl());
-			throw unexpectedFailure(e, "Contact %s update failed",contactId);
+			currentPerson.setName(oldName);
+			currentPerson.setLocation(oldLocation);
+			currentPerson.setWorkplaceHomepage(oldWorkplaceHomepage);
+			throw unexpectedFailure(e, "Person %s update failed",personId);
 		}
 	}
 

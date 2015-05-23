@@ -24,7 +24,7 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.contact;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
@@ -43,6 +43,10 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.tutorial.application.api.AgendaService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.util.IdentityUtil;
+import org.ldp4j.tutorial.frontend.util.FormatUtil;
+import org.ldp4j.tutorial.frontend.util.Serviceable;
+import org.ldp4j.tutorial.frontend.util.Typed;
 
 @DirectContainer(
 	id = ContactContainerHandler.ID,
@@ -54,12 +58,12 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 	public static final String ID="ContactContainerHandler";
 
 
-	protected ContactContainerHandler(AgendaService service) {
+	public ContactContainerHandler(AgendaService service) {
 		super(service);
 	}
 
 	private Person findPerson(ResourceSnapshot resource) throws UnknownResourceException {
-		String id = AgendaApplicationUtils.personId(resource);
+		String id = IdentityUtil.personId(resource);
 		Person person = agendaService().getPerson(id);
 		if(person==null) {
 			throw unknownResource(id, "person");
@@ -93,7 +97,7 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 
 		Contact protoContact=typedContact.get();
 
-		Name<?> contactName=AgendaApplicationUtils.name(protoContact);
+		Name<?> contactName=IdentityUtil.name(protoContact);
 
 		Contact contact=
 			agendaService().
@@ -105,14 +109,14 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 					protoContact.getTelephone());
 		try {
 			ResourceSnapshot contactResource=container.addMember(contactName);
-			ContactId contactId=AgendaApplicationUtils.contactId(contactResource);
+			ContactId contactId=IdentityUtil.contactId(contactResource);
 			session.saveChanges();
-			info("Created contact %s: %s",contactId,AgendaApplicationUtils.toString(contact),person.getEmail());
+			info("Created contact %s: %s",contactId,FormatUtil.toString(contact),person.getEmail());
 			return contactResource;
 		} catch (WriteSessionException e) {
 			agendaService().
 				deletePersonContact(person.getEmail(),contact.getEmail());
-			throw unexpectedFailure(e, "Could not create contact %s",AgendaApplicationUtils.toString(contact));
+			throw unexpectedFailure(e, "Could not create contact %s",FormatUtil.toString(contact));
 		}
 	}
 

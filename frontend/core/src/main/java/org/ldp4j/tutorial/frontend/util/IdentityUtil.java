@@ -24,75 +24,22 @@
  *   Bundle      : frontend-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.tutorial.frontend;
+package org.ldp4j.tutorial.frontend.util;
 
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.data.FormatUtils;
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.data.Value;
-import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
+import org.ldp4j.tutorial.frontend.contact.ContactId;
 
-import com.google.common.base.Objects;
+public final class IdentityUtil {
 
-final class AgendaApplicationUtils {
-
-	private AgendaApplicationUtils() {
-	}
-
-	static String toString(ManagedIndividualId id) {
-		return String.format("%s {Managed by: %s}",id.name(),id.managerId());
-	}
-
-	static String toString(Value value) {
-		final AtomicReference<String> result=new AtomicReference<String>();
-		value.accept(
-			new ValueVisitor() {
-				@Override
-				public void visitLiteral(Literal<?> value) {
-					result.set(String.format("%s [%s]",value.get(),value.get().getClass().getCanonicalName()));
-				}
-				@Override
-				public void visitIndividual(Individual<?, ?> value) {
-					result.set(FormatUtils.formatIndividualId(value));
-				}
-			}
-		);
-		return result.get();
-	}
-
-	static String toString(Contact contact) {
-		return
-			Objects.
-				toStringHelper(Contact.class).
-					omitNullValues().
-						add("email",contact.getEmail()).
-						add("fullName",contact.getFullName()).
-						add("telephone",contact.getTelephone()).
-						add("url",contact.getUrl()).
-						toString();
-	}
-
-	static String toString(Person contact) {
-		return
-			Objects.
-				toStringHelper(Person.class).
-					omitNullValues().
-						add("email",contact.getEmail()).
-						add("name",contact.getName()).
-						add("location",contact.getLocation()).
-						add("workplaceHomepage",contact.getWorkplaceHomepage()).
-						toString();
+	private IdentityUtil() {
 	}
 
 	public static String personId(ResourceSnapshot resource) {
