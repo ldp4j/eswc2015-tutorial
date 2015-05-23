@@ -48,20 +48,18 @@ import org.ldp4j.tutorial.application.api.Contact;
 @Resource(
 	id=ContactHandler.ID
 )
-public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
+public class ContactHandler extends Serviceable implements ResourceHandler, Modifiable, Deletable {
 
 	public static final String ID="ContactHandler";
 
-	private final AgendaService service;
-
 	protected ContactHandler(AgendaService service) {
-		this.service = service;
+		super(service);
 	}
 
 	private Contact findContact(ResourceSnapshot resource) throws UnknownResourceException {
 		Serializable personId = resource.parent().parent().name().id();
 		Serializable contactId = resource.name().id();
-		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		Contact contact = agendaService().getPersonContact(personId.toString(),contactId.toString());
 		if(contact==null) {
 			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
 		}
@@ -78,26 +76,28 @@ public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
 		Serializable personId = resource.parent().parent().name().id();
 		Serializable contactId = resource.name().id();
-		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		Contact contact = agendaService().getPersonContact(personId.toString(),contactId.toString());
 		if(contact==null) {
 			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
 		}
-		this.service.deletePersonContact(personId.toString(),contactId.toString());
+		agendaService().deletePersonContact(personId.toString(),contactId.toString());
 		try {
 			session.delete(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			this.service.addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
+			agendaService().addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
 			throw new IllegalStateException("Contact deletion failed",e);
 		}
 	}
 
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws UnknownResourceException, UnsupportedContentException, InconsistentContentException, ApplicationRuntimeException {
+		trace("Updating contact from: %n%s",content);
+
 		Serializable personId = resource.parent().parent().name().id();
 		Serializable contactId = resource.name().id();
-		Contact contact = this.service.getPersonContact(personId.toString(),contactId.toString());
+		Contact contact = agendaService().getPersonContact(personId.toString(),contactId.toString());
 		if(contact==null) {
 			throw new UnknownResourceException("Could not find contact '"+contactId+"' of person '"+personId+"'");
 		}
@@ -106,7 +106,12 @@ public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
 			throw new ApplicationRuntimeException("Could not find input data");
 		}
 
-		Contact newContact = ContactMapper.enforceConsistency(individual, contact);
+		Typed<Contact> tContact=ContactMapper.toContact(individual);
+		ContactConstraints.validate(tContact);
+
+		Contact newContact = tContact.get();
+		ContactConstraints.checkConstraints(contact,newContact);
+
 		contact.setFullName(newContact.getFullName());
 		contact.setTelephone(newContact.getTelephone());
 		contact.setUrl(newContact.getUrl());
@@ -115,7 +120,7 @@ public class ContactHandler implements ResourceHandler, Modifiable, Deletable {
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			this.service.addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
+			agendaService().addContactToPerson(personId.toString(), contact.getFullName(), contact.getUrl(), contact.getEmail(), contact.getTelephone());
 			throw new IllegalStateException("Contact update failed",e);
 		}
 	}

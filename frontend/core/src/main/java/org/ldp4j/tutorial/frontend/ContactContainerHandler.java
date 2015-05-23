@@ -29,6 +29,7 @@ package org.ldp4j.tutorial.frontend;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -80,14 +81,19 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 						UnknownResourceException,
 						UnsupportedContentException,
 						ApplicationRuntimeException {
+		trace("Creating contact from: %n%s",representation);
+
 		ResourceSnapshot parent = container.parent();
 		Person person=findPerson(parent);
 
-		Contact protoContact=ContactMapper.enforceConsistency(DataSetUtils.newHelper(representation).self());
+		Individual<?, ?> individual = DataSetUtils.newHelper(representation).self();
+
+		Typed<Contact> tContact=ContactMapper.toContact(individual);
+		ContactConstraints.validate(tContact);
+
+		Contact protoContact=tContact.get();
 
 		Name<?> contactName=ContactMapper.contactName(protoContact);
-
-		trace("Creating contact from: %n%s",representation);
 
 		Contact contact=
 			agendaService().
