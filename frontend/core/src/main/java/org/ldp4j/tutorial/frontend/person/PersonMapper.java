@@ -134,7 +134,7 @@ final class PersonMapper implements PersonVocabulary {
 						firstIndividual(ExternalIndividual.class);
 	}
 
-	public static DataSet toDataSet(Person person) {
+	static DataSet toDataSet(Person person) {
 		Name<String> personName=IdentityUtil.name(person);
 
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
@@ -148,7 +148,7 @@ final class PersonMapper implements PersonVocabulary {
 		return dataSet;
 	}
 
-	public static Typed<Person> toPerson(Individual<?,?> individual) {
+	static Typed<Person> toPerson(Individual<?,?> individual) {
 		MutablePerson person = new MutablePerson();
 		Typed<Person> result=Typed.<Person>create(person);
 		for(URI uri:Mapper.create(individual).types()) {
@@ -164,11 +164,12 @@ final class PersonMapper implements PersonVocabulary {
 		return result;
 	}
 
-	public static Person clone(Person person) {
+	static Person clone(Person person) {
 		return new MutablePerson(person);
 	}
 
-	public static void copy(Person source, Person target) {
+	static void copy(Person source, Person target) {
+		target.setEmail(source.getEmail());
 		target.setName(source.getName());
 		target.setLocation(source.getLocation());
 		target.setWorkplaceHomepage(source.getWorkplaceHomepage());

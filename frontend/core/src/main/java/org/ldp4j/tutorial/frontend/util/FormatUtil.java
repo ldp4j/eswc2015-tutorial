@@ -70,8 +70,8 @@ public final class FormatUtil {
 			Objects.
 				toStringHelper(Contact.class).
 					omitNullValues().
-						add("email",contact.getEmail()).
 						add("fullName",contact.getFullName()).
+						add("email",contact.getEmail()).
 						add("telephone",contact.getTelephone()).
 						add("url",contact.getUrl()).
 						toString();
@@ -82,8 +82,8 @@ public final class FormatUtil {
 			Objects.
 				toStringHelper(Person.class).
 					omitNullValues().
-						add("email",contact.getEmail()).
 						add("name",contact.getName()).
+						add("email",contact.getEmail()).
 						add("location",contact.getLocation()).
 						add("workplaceHomepage",contact.getWorkplaceHomepage()).
 						toString();

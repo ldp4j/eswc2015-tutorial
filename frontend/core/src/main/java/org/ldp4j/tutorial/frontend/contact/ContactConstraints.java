@@ -48,9 +48,9 @@ import com.google.common.base.Objects;
 
 final class ContactConstraints implements ContactVocabulary {
 
-	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
-
 	private static final String VCARD_EMAIL ="http://www.w3.org/2006/vcard/ns#Email";
+
+	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
 
 	private ContactConstraints() {
 	}
@@ -114,7 +114,7 @@ final class ContactConstraints implements ContactVocabulary {
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(FULL_NAME)).
-								withValueType(URI.create(XSD_STRING)).
+								withDatatype(URI.create(XSD_STRING)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.
@@ -140,13 +140,13 @@ final class ContactConstraints implements ContactVocabulary {
 		return constraints;
 	}
 
-	public static void checkConstraints(Contact currentContact, Typed<Contact> updatedContact) throws InconsistentContentException {
+	static void checkConstraints(Contact currentContact, Typed<Contact> updatedContact) throws InconsistentContentException {
 		if(!Objects.equal(currentContact.getEmail(),updatedContact.get().getEmail())) {
 			throw new InconsistentContentException("Contact email cannot be modified",createConstraints(currentContact));
 		}
 	}
 
-	public static void validate(Typed<Contact> typedContact) throws UnsupportedContentException {
+	static void validate(Typed<Contact> typedContact) throws UnsupportedContentException {
 		Contact contact = typedContact.get();
 		if(!typedContact.hasType(INDIVIDUAL) || contact.getEmail()==null || contact.getUrl()==null || contact.getFullName()==null || contact.getTelephone()==null) {
 			throw new UnsupportedContentException("Incomplete contact definition",createConstraints(null));

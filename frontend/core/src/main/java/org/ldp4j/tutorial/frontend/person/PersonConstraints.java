@@ -47,13 +47,13 @@ import com.google.common.base.Objects;
 
 final class PersonConstraints implements PersonVocabulary {
 
-	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
-
 	private static final String GEO_SPATIAL_THING="http://www.w3.org/2003/01/geo/wgs84_pos#SpatialThing";
 
 	private static final String FOAF_DOCUMENT = "http://xmlns.com/foaf/0.1/Document";
 
 	private static final String FOAF_THING = "http://xmlns.com/foaf/0.1/Thing";
+
+	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
 
 	private PersonConstraints() {
 	}
@@ -95,7 +95,7 @@ final class PersonConstraints implements PersonVocabulary {
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(NAME)).
-								withValueType(URI.create(XSD_STRING)).
+								withDatatype(URI.create(XSD_STRING)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.
@@ -122,14 +122,14 @@ final class PersonConstraints implements PersonVocabulary {
 		return constraints;
 	}
 
-	public static void validate(Typed<Person> typedPerson) throws UnsupportedContentException {
+	static void validate(Typed<Person> typedPerson) throws UnsupportedContentException {
 		Person person=typedPerson.get();
 		if(!typedPerson.hasType(PERSON) || person.getEmail()==null || person.getName()==null || person.getLocation()==null || person.getWorkplaceHomepage()==null) {
 			throw new UnsupportedContentException("Incomplete person definition",createConstraints(null));
 		}
 	}
 
-	public static void checkConstraints(Person currentPerson, Typed<Person> updatedPerson) throws InconsistentContentException {
+	static void checkConstraints(Person currentPerson, Typed<Person> updatedPerson) throws InconsistentContentException {
 		if(!Objects.equal(currentPerson.getEmail(),updatedPerson.get().getEmail())) {
 			throw new InconsistentContentException("Person email cannot be modified",createConstraints(currentPerson));
 		}

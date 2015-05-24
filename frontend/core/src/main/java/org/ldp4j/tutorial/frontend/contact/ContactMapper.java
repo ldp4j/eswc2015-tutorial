@@ -100,7 +100,7 @@ final class ContactMapper implements ContactVocabulary {
 	private ContactMapper() {
 	}
 
-	public static Typed<Contact> toContact(Individual<?,?> individual) {
+	static Typed<Contact> toContact(Individual<?,?> individual) {
 		MutableContact contact = new MutableContact();
 		Typed<Contact> result = Typed.<Contact>create(contact);
 
@@ -129,7 +129,7 @@ final class ContactMapper implements ContactVocabulary {
 		return result;
 	}
 
-	public static DataSet toDataSet(Contact contact) {
+	static DataSet toDataSet(Contact contact) {
 		Name<String> contactName=IdentityUtil.name(contact);
 		Name<?> telephoneName=IdentityUtil.name(contact,"telephone");
 
@@ -161,11 +161,12 @@ final class ContactMapper implements ContactVocabulary {
 		return dataSet;
 	}
 
-	public static Contact clone(Contact contact) {
+	static Contact clone(Contact contact) {
 		return new MutableContact(contact);
 	}
 
-	public static void copy(Contact source, Contact target) {
+	static void copy(Contact source, Contact target) {
+		target.setEmail(source.getEmail());
 		target.setFullName(source.getFullName());
 		target.setTelephone(source.getTelephone());
 		target.setUrl(source.getUrl());
