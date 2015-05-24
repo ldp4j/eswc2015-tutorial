@@ -37,6 +37,7 @@ import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.constraints.Constraints.Cardinality;
 import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.tutorial.application.api.Contact;
@@ -46,6 +47,10 @@ import org.ldp4j.tutorial.frontend.util.Typed;
 import com.google.common.base.Objects;
 
 final class ContactConstraints implements ContactVocabulary {
+
+	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
+
+	private static final String VCARD_EMAIL ="http://www.w3.org/2006/vcard/ns#Email";
 
 	private ContactConstraints() {
 	}
@@ -74,6 +79,7 @@ final class ContactConstraints implements ContactVocabulary {
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(NUMBER)).
+								withValueType(RDFS.RESOURCE.as(URI.class)).
 								withCardinality(Cardinality.mandatory()));
 
 		PropertyConstraint emailConstraint = null;
@@ -102,14 +108,18 @@ final class ContactConstraints implements ContactVocabulary {
 						Constraints.
 							propertyConstraint(typeIndividual.id()).
 								withValue(individualIndividual)).
-					withPropertyConstraint(emailConstraint).
+					withPropertyConstraint(
+						emailConstraint.
+							withValueType(URI.create(VCARD_EMAIL))).
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(FULL_NAME)).
+								withValueType(URI.create(XSD_STRING)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(URL)).
+								withValueType(RDFS.RESOURCE.as(URI.class)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.

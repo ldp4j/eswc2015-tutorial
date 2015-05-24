@@ -47,6 +47,14 @@ import com.google.common.base.Objects;
 
 final class PersonConstraints implements PersonVocabulary {
 
+	private static final String XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
+
+	private static final String GEO_SPATIAL_THING="http://www.w3.org/2003/01/geo/wgs84_pos#SpatialThing";
+
+	private static final String FOAF_DOCUMENT = "http://xmlns.com/foaf/0.1/Document";
+
+	private static final String FOAF_THING = "http://xmlns.com/foaf/0.1/Thing";
+
 	private PersonConstraints() {
 	}
 
@@ -82,18 +90,22 @@ final class PersonConstraints implements PersonVocabulary {
 					withLabel("PersonShape").
 					withComment("Person resource shape").
 					withPropertyConstraint(
-						emailConstraint).
+						emailConstraint.
+							withValueType(URI.create(FOAF_THING))).
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(NAME)).
+								withValueType(URI.create(XSD_STRING)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(LOCATION)).
+								withValueType(URI.create(GEO_SPATIAL_THING)).
 								withCardinality(Cardinality.mandatory())).
 					withPropertyConstraint(
 						Constraints.
 							propertyConstraint(URI.create(WORKPLACE_HOMEPAGE)).
+								withValueType(URI.create(FOAF_DOCUMENT)).
 								withCardinality(Cardinality.mandatory()));
 
 		Constraints constraints =
