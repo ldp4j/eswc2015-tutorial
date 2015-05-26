@@ -38,7 +38,7 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
@@ -54,7 +54,7 @@ public class PersonContainerHandler extends Serviceable implements ContainerHand
 
 	public static final String ID="PersonContainerHandler";
 
-	public PersonContainerHandler(AgendaService service) {
+	public PersonContainerHandler(ContactsService service) {
 		super(service);
 	}
 
@@ -87,7 +87,7 @@ public class PersonContainerHandler extends Serviceable implements ContainerHand
 
 		Person protoPerson=typedPerson.get();
 		Person person=
-			agendaService().
+			contactsService().
 				createPerson(
 					protoPerson.getEmail(),
 					protoPerson.getName(),
@@ -107,7 +107,7 @@ public class PersonContainerHandler extends Serviceable implements ContainerHand
 			info("Created person %s : %s",person.getEmail(),FormatUtil.toString(person));
 			return personResource;
 		} catch (WriteSessionException e) {
-			agendaService().
+			contactsService().
 				deletePerson(person.getEmail());
 			throw unexpectedFailure(e,"Could not create person %s",FormatUtil.toString(person));
 		}

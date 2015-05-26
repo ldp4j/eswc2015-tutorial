@@ -42,7 +42,7 @@ import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
@@ -65,12 +65,12 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 	public static final String ID="PersonHandler";
 	public static final String PERSON_CONTACTS="personContacts";
 
-	public PersonHandler(AgendaService service) {
+	public PersonHandler(ContactsService service) {
 		super(service);
 	}
 
 	private Person findPerson(String personId) throws UnknownResourceException {
-		Person person = agendaService().getPerson(personId);
+		Person person = contactsService().getPerson(personId);
 		if(person==null) {
 			throw unknownResource(personId,"Person");
 		}
@@ -92,9 +92,9 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 		trace("Requested person %s deletion...",personId);
 		Person person=findPerson(personId);
 		info("Deleting person %s...",personId);
-		Collection<Contact> contacts = agendaService().listPersonContacts(personId);
+		Collection<Contact> contacts = contactsService().listPersonContacts(personId);
 		try {
-			agendaService().deletePerson(personId);
+			contactsService().deletePerson(personId);
 			session.delete(resource);
 			session.saveChanges();
 			info("Deleted person %s : %s",personId,FormatUtil.toString(person));
@@ -126,8 +126,7 @@ public class PersonHandler extends Serviceable implements ResourceHandler, Modif
 				personIndividual(content,currentPerson);
 
 		Typed<Person> updatedPerson=PersonMapper.toPerson(individual);
-
-		PersonConstraints.validate(updatedPerson);
+		PersonConstraints.validate(currentPerson,updatedPerson);
 		PersonConstraints.checkConstraints(currentPerson, updatedPerson);
 
 		Person backupPerson = PersonMapper.clone(currentPerson);

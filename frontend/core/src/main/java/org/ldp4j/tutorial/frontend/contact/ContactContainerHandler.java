@@ -39,7 +39,7 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
@@ -57,12 +57,12 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 	public static final String ID="ContactContainerHandler";
 
 
-	public ContactContainerHandler(AgendaService service) {
+	public ContactContainerHandler(ContactsService service) {
 		super(service);
 	}
 
 	private Person findPerson(String personId) throws UnknownResourceException {
-		Person person = agendaService().getPerson(personId);
+		Person person = contactsService().getPerson(personId);
 		if(person==null) {
 			throw unknownResource(personId, "Person");
 		}
@@ -101,7 +101,7 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 		Contact protoContact=typedContact.get();
 
 		Contact contact=
-			agendaService().
+			contactsService().
 				addContactToPerson(
 					person.getEmail(),
 					protoContact.getFullName(),
@@ -116,7 +116,7 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 			info("Created contact %s : %s",contactId,FormatUtil.toString(contact));
 			return contactResource;
 		} catch (WriteSessionException e) {
-			agendaService().
+			contactsService().
 				deletePersonContact(person.getEmail(),contact.getEmail());
 			throw unexpectedFailure(e,"Could not create contact %s",FormatUtil.toString(contact));
 		}

@@ -39,7 +39,7 @@ import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
 import org.ldp4j.tutorial.frontend.util.IdentityUtil;
@@ -53,13 +53,13 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 
 	public static final String ID="ContactHandler";
 
-	public ContactHandler(AgendaService service) {
+	public ContactHandler(ContactsService service) {
 		super(service);
 	}
 
 	private Contact findContact(ContactId id) throws UnknownResourceException {
 		Contact contact=
-			agendaService().
+			contactsService().
 				getPersonContact(id.getPerson(),id.getEmail());
 		if(contact==null) {
 			super.unknownResource(id,"Contact");
@@ -81,7 +81,7 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 		ContactId contactId = IdentityUtil.contactId(resource);
 		trace("Requested contact %s deletion",contactId);
 		Contact currentContact = findContact(contactId);
-		agendaService().
+		contactsService().
 			deletePersonContact(
 				contactId.getPerson(),
 				contactId.getEmail());
@@ -91,7 +91,7 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 			info("Deleted contact %s: %s",contactId,FormatUtil.toString(currentContact));
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			agendaService().
+			contactsService().
 				addContactToPerson(
 					contactId.getPerson(),
 					currentContact.getFullName(),
@@ -122,7 +122,7 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 				contactIndividual(content,currentContact);
 
 		Typed<Contact> updatedContact=ContactMapper.toContact(individual);
-		ContactConstraints.validate(updatedContact);
+		ContactConstraints.validate(currentContact,updatedContact);
 		ContactConstraints.checkConstraints(currentContact,updatedContact);
 
 		Contact backupContact=ContactMapper.clone(currentContact);

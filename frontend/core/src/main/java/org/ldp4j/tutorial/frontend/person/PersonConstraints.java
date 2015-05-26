@@ -123,9 +123,13 @@ final class PersonConstraints implements PersonVocabulary {
 	}
 
 	static void validate(Typed<Person> typedPerson) throws UnsupportedContentException {
+		validate(null,typedPerson);
+	}
+
+	static void validate(Person currentPerson, Typed<Person> typedPerson) throws UnsupportedContentException {
 		Person person=typedPerson.get();
 		if(!typedPerson.hasType(PERSON) || person.getEmail()==null || person.getName()==null || person.getLocation()==null || person.getWorkplaceHomepage()==null) {
-			throw new UnsupportedContentException("Incomplete person definition",createConstraints(null));
+			throw new UnsupportedContentException("Incomplete person definition",createConstraints(currentPerson));
 		}
 	}
 

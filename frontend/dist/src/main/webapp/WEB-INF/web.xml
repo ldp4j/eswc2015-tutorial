@@ -36,11 +36,11 @@
 		http://java.sun.com/xml/ns/javaee
 		http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-	<display-name>Agenda Application</display-name>
+	<display-name>Contacts Application</display-name>
 
 	<context-param>
 		<param-name>ldp4jTargetApplication</param-name>
-		<param-value>org.ldp4j.tutorial.frontend.AgendaApplication</param-value>
+		<param-value>org.ldp4j.tutorial.frontend.ContactsApplication</param-value>
 	</context-param>
 
 </web-app>

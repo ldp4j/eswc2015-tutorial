@@ -40,53 +40,53 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AgendaService {
+public abstract class ContactsService {
 
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaService.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(ContactsService.class);
 
-	public static final String APP_MANAGER_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.tutorial.application.api.AppManager.finder";
+	public static final String CONTACTS_SERVICE_SPI_DELEGATE_FINDER = "org.ldp4j.tutorial.application.api.ContactsService.finder";
 
 	/**
 	 * Name of the configuration file where the
-	 * {@link AgendaService#APP_MANAGER_SPI_PROPERTY} property that
-	 * identifies the {@link AgendaService} implementation to be returned from
-	 * {@link AgendaService#getInstance()} can be defined.
+	 * {@link ContactsService#CONTACTS_SERVICE_SPI_PROPERTY} property that
+	 * identifies the {@link ContactsService} implementation to be returned from
+	 * {@link ContactsService#getInstance()} can be defined.
 	 */
-	public static final String APP_MANAGER_SPI_CFG = "ldp4j-application.properties";
+	public static final String CONTACTS_SERVICE_SPI_CONFIG_FILE = "contacts.properties";
 
 	/**
-	 * Name of the property identifying the {@link AgendaService} implementation
-	 * to be returned from {@link AgendaService#getInstance()}.
+	 * Name of the property identifying the {@link ContactsService} implementation
+	 * to be returned from {@link ContactsService#getInstance()}.
 	 */
-	public static final String APP_MANAGER_SPI_PROPERTY = "org.ldp4j.tutorial.application.api.AppManager";
+	public static final String CONTACTS_SERVICE_SPI_PROPERTY = "org.ldp4j.tutorial.application.api.ContactsService";
 
-	private static final AtomicReference<AgendaService> CACHED_DELEGATE=new AtomicReference<AgendaService>();
+	private static final AtomicReference<ContactsService> CACHED_DELEGATE=new AtomicReference<ContactsService>();
 
 	private static ReflectPermission suppressAccessChecksPermission = new ReflectPermission("suppressAccessChecks");
 
 	/**
 	 * Allows custom implementations to extend the {@code RuntimeInstance} class.
 	 */
-	protected AgendaService() {
+	protected ContactsService() {
 	}
 
 	/**
-	 * Obtain a {@code RuntimeInstance} instance using the method described in
+	 * Obtain a {@code ContactsService} instance using the method described in
 	 * {@link #getInstance}.
 	 *
-	 * @return an instance of {@code RuntimeInstance}.
+	 * @return an instance of {@code ContactsService}.
 	 */
-	private static AgendaService findDelegate() {
+	private static ContactsService findDelegate() {
 		try {
-			AgendaService result=createRuntimeInstanceFromSPI();
+			ContactsService result=createRuntimeInstanceFromSPI();
 			if(result==null) {
 				result=createRuntimeInstanceFromConfigurationFile();
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(APP_MANAGER_SPI_PROPERTY);
+				String delegateClassName = System.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -102,8 +102,8 @@ public abstract class AgendaService {
 		}
 	}
 
-	private static AgendaService createRuntimeInstanceFromConfigurationFile() {
-		AgendaService result=null;
+	private static ContactsService createRuntimeInstanceFromConfigurationFile() {
+		ContactsService result=null;
 		File configFile = getConfigurationFile();
 		if(configFile.canRead()) {
 			InputStream is=null;
@@ -111,7 +111,7 @@ public abstract class AgendaService {
 				is=new FileInputStream(configFile);
 				Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(APP_MANAGER_SPI_PROPERTY);
+				String delegateClassName=configProperties.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -135,13 +135,13 @@ public abstract class AgendaService {
 
 	/**
 	 * Get the configuration file for the Runtime Instance: a file named
-	 * {@link AgendaService#APP_MANAGER_SPI_CFG} in the <code>lib</code> directory of
+	 * {@link ContactsService#CONTACTS_SERVICE_SPI_CONFIG_FILE} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
 	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
-		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+APP_MANAGER_SPI_CFG);
+		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+CONTACTS_SERVICE_SPI_CONFIG_FILE);
 	}
 
 	/**
@@ -161,22 +161,22 @@ public abstract class AgendaService {
 		}
 	}
 
-	private static AgendaService createRuntimeInstanceFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(APP_MANAGER_SPI_RUNTIMEINSTANCE_FINDER))) {
-			for (AgendaService delegate : ServiceLoader.load(AgendaService.class)) {
+	private static ContactsService createRuntimeInstanceFromSPI() {
+		if(!"disable".equalsIgnoreCase(System.getProperty(CONTACTS_SERVICE_SPI_DELEGATE_FINDER))) {
+			for (ContactsService delegate : ServiceLoader.load(ContactsService.class)) {
 				return delegate;
 			}
 		}
 		return null;
 	}
 
-	private static AgendaService createRuntimeInstanceForClassName(String delegateClassName) {
-		AgendaService result = null;
+	private static ContactsService createRuntimeInstanceForClassName(String delegateClassName) {
+		ContactsService result = null;
 		try {
 			Class<?> delegateClass = Class.forName(delegateClassName);
-			if(AgendaService.class.isAssignableFrom(delegateClass)) {
+			if(ContactsService.class.isAssignableFrom(delegateClass)) {
 				Object impl = delegateClass.newInstance();
-				result = AgendaService.class.cast(impl);
+				result = ContactsService.class.cast(impl);
 			}
 		} catch (ClassNotFoundException e) {
 			handleFailure(delegateClassName, "find", e);
@@ -200,8 +200,8 @@ public abstract class AgendaService {
 	}
 
 	/**
-	 * Obtain a {@code RuntimeInstance} instance. If an instance had not already
-	 * been created and set via {@link #setInstance(AgendaService)}, the first
+	 * Obtain a {@code ContactsService} instance. If an instance had not already
+	 * been created and set via {@link #setInstance(ContactsService)}, the first
 	 * invocation will create an instance which will then be cached for future
 	 * use.
 	 *
@@ -212,17 +212,17 @@ public abstract class AgendaService {
 	 * <ul>
 	 * <li>
 	 * If a resource with the name of
-	 * {@code META-INF/services/org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} exists, then
+	 * {@code META-INF/services/org.ldp4j.tutorial.application.api.ContactsService} exists, then
 	 * its first line, if present, is used as the UTF-8 encoded name of the
 	 * implementation class.</li>
 	 * <li>
-	 * If the $java.home/lib/poc-business-logic.properties file exists and it is readable by
+	 * If the $java.home/lib/contacts.properties file exists and it is readable by
 	 * the {@code java.util.Properties.load(InputStream)} method and it contains
-	 * an entry whose key is {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance}, then the
+	 * an entry whose key is {@code org.ldp4j.tutorial.application.api.ContactsService}, then the
 	 * value of that entry is used as the name of the implementation class.</li>
 	 * <li>
 	 * If a system property with the name
-	 * {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} is defined, then its value is
+	 * {@code org.ldp4j.tutorial.application.api.ContactsService} is defined, then its value is
 	 * used as the name of the implementation class.</li>
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
@@ -230,24 +230,24 @@ public abstract class AgendaService {
 	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
-	public static AgendaService getInstance() {
-		AgendaService result = AgendaService.CACHED_DELEGATE.get();
+	public static ContactsService getInstance() {
+		ContactsService result = ContactsService.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
 		}
-		synchronized(AgendaService.CACHED_DELEGATE) {
-			result=AgendaService.CACHED_DELEGATE.get();
+		synchronized(ContactsService.CACHED_DELEGATE) {
+			result=ContactsService.CACHED_DELEGATE.get();
 			if(result==null) {
-				AgendaService delegate = findDelegate();
-				AgendaService.CACHED_DELEGATE.set(delegate);
-				result=AgendaService.CACHED_DELEGATE.get();
+				ContactsService delegate = findDelegate();
+				ContactsService.CACHED_DELEGATE.set(delegate);
+				result=ContactsService.CACHED_DELEGATE.get();
 			}
 			return result;
 		}
 	}
 
 	/**
-	 * Set the runtime delegate that will be used by Client Business Logic API
+	 * Set the runtime delegate that will be used by Contacts Service API
 	 * classes. If this method is not called prior to {@link #getInstance} then
 	 * an implementation will be sought as described in {@link #getInstance}.
 	 *
@@ -258,17 +258,17 @@ public abstract class AgendaService {
 	 *             ReflectPermission("suppressAccessChecks") has not been
 	 *             granted.
 	 */
-	public static void setInstance(final AgendaService delegate) {
+	public static void setInstance(final ContactsService delegate) {
 		SecurityManager security = System.getSecurityManager();
 		if (security != null) {
 			security.checkPermission(suppressAccessChecksPermission);
 		}
-		AgendaService.CACHED_DELEGATE.set(delegate);
+		ContactsService.CACHED_DELEGATE.set(delegate);
 	}
 
-	private static class DefaultAgendaService extends AgendaService {
+	private static class DefaultAgendaService extends ContactsService {
 
-		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",AgendaService.class);
+		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",ContactsService.class);
 
 		@Override
 		public Person createPerson(String account, String name,
@@ -319,7 +319,7 @@ public abstract class AgendaService {
 
     /**
      * Adds a new Person to the application. This person can manage the her
-     * contacts using the application. If the App changes any of the values from newPerson
+     * contacts using the application. If the service changes any of the values from newPerson
      * it will be reflected in the returned person object.
      * @param newPerson a new person to be added to the app
      * @return Person object that reflects the state of the newly created person

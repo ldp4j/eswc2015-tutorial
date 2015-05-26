@@ -94,9 +94,9 @@ final class ContactConstraints implements ContactVocabulary {
 						withValue(emailIndividual);
 		} else {
 			emailConstraint=
-					Constraints.
-							propertyConstraint(URI.create(EMAIL)).
-								withCardinality(Cardinality.mandatory());
+				Constraints.
+						propertyConstraint(URI.create(EMAIL)).
+							withCardinality(Cardinality.mandatory());
 		}
 
 		Shape contactShape=
@@ -140,16 +140,20 @@ final class ContactConstraints implements ContactVocabulary {
 		return constraints;
 	}
 
-	static void checkConstraints(Contact currentContact, Typed<Contact> updatedContact) throws InconsistentContentException {
-		if(!Objects.equal(currentContact.getEmail(),updatedContact.get().getEmail())) {
-			throw new InconsistentContentException("Contact email cannot be modified",createConstraints(currentContact));
+	static void validate(Typed<Contact> typedContact) throws UnsupportedContentException {
+		validate(null,typedContact);
+	}
+
+	static void validate(Contact currentContact, Typed<Contact> typedContact) throws UnsupportedContentException {
+		Contact contact = typedContact.get();
+		if(!typedContact.hasType(INDIVIDUAL) || contact.getEmail()==null || contact.getUrl()==null || contact.getFullName()==null || contact.getTelephone()==null) {
+			throw new UnsupportedContentException("Incomplete contact definition",createConstraints(currentContact));
 		}
 	}
 
-	static void validate(Typed<Contact> typedContact) throws UnsupportedContentException {
-		Contact contact = typedContact.get();
-		if(!typedContact.hasType(INDIVIDUAL) || contact.getEmail()==null || contact.getUrl()==null || contact.getFullName()==null || contact.getTelephone()==null) {
-			throw new UnsupportedContentException("Incomplete contact definition",createConstraints(null));
+	static void checkConstraints(Contact currentContact, Typed<Contact> updatedContact) throws InconsistentContentException {
+		if(!Objects.equal(currentContact.getEmail(),updatedContact.get().getEmail())) {
+			throw new InconsistentContentException("Contact email cannot be modified",createConstraints(currentContact));
 		}
 	}
 

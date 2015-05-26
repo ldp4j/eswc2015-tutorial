@@ -28,15 +28,15 @@ package org.ldp4j.tutorial.application.core;
 
 import java.util.*;
 
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 
-public class InMemoryAgendaService extends AgendaService {
+public class InMemoryContactsService extends ContactsService {
 
 	private final Map<String,Account> persons;
 
-	public InMemoryAgendaService() {
+	public InMemoryContactsService() {
 		this.persons=new LinkedHashMap<String, Account>();
 	}
 

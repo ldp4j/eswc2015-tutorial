@@ -34,7 +34,7 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.frontend.contact.ContactContainerHandler;
 import org.ldp4j.tutorial.frontend.contact.ContactHandler;
 import org.ldp4j.tutorial.frontend.person.PersonContainerHandler;
@@ -42,9 +42,9 @@ import org.ldp4j.tutorial.frontend.person.PersonHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class AgendaApplication extends Application<Configuration> {
+public final class ContactsApplication extends Application<Configuration> {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(AgendaApplication.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(ContactsApplication.class);
 
 	private static final String PERSON_CONTAINER_NAME     = "PersonContainer";
 
@@ -52,7 +52,7 @@ public final class AgendaApplication extends Application<Configuration> {
 
 	private final Name<String> personContainerName;
 
-	public AgendaApplication() {
+	public ContactsApplication() {
 		this.personContainerName=
 			NamingScheme.
 				getDefault().
@@ -61,9 +61,9 @@ public final class AgendaApplication extends Application<Configuration> {
 
 	@Override
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
-		LOGGER.info("Starting Agenda Application configuration...");
+		LOGGER.info("Starting Contacts Application configuration...");
 
-		AgendaService service = AgendaService.getInstance();
+		ContactsService service = ContactsService.getInstance();
 
 		bootstrap.addHandler(new PersonContainerHandler(service));
 		bootstrap.addHandler(new PersonHandler(service));
@@ -76,25 +76,25 @@ public final class AgendaApplication extends Application<Configuration> {
 				PersonContainerHandler.class,
 				ROOT_PERSON_CONTAINER_PATH);
 
-		LOGGER.info("Agenda Application configuration completed.");
+		LOGGER.info("Contacts Application configuration completed.");
 	}
 
 	@Override
 	public void initialize(WriteSession session) {
-		LOGGER.info("Initializing Agenda Application...");
+		LOGGER.info("Initializing Contacts Application...");
 		try {
 			session.saveChanges();
-			LOGGER.info("Agenda Application initialization completed.");
+			LOGGER.info("Contacts Application initialization completed.");
 		} catch (WriteSessionException e) {
-			LOGGER.warn("Agenda Application initialization failed.",e);
+			LOGGER.warn("Contacts Application initialization failed.",e);
 			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
 	public void shutdown() {
-		LOGGER.info("Starting Agenda Application shutdown...");
-		LOGGER.info("Agenda Application shutdown completed.");
+		LOGGER.info("Starting Contacts Application shutdown...");
+		LOGGER.info("Contacts Application shutdown completed.");
 	}
 
 }

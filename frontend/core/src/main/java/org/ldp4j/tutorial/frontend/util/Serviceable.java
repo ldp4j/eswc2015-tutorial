@@ -28,7 +28,7 @@ package org.ldp4j.tutorial.frontend.util;
 
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.UnknownResourceException;
-import org.ldp4j.tutorial.application.api.AgendaService;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +37,14 @@ public abstract class Serviceable {
 
 	private final Logger logger;
 
-	private final AgendaService service;
+	private final ContactsService service;
 
-	public Serviceable(AgendaService service) {
+	public Serviceable(ContactsService service) {
 		this.service = service;
 		this.logger=LoggerFactory.getLogger(getClass());
 	}
 
-	protected final AgendaService agendaService() {
+	protected final ContactsService contactsService() {
 		return this.service;
 	}
 
