@@ -26,38 +26,21 @@
  */
 package org.ldp4j.tutorial.client;
 
-enum Command {
+public class ClearCommandProcessor extends AbstractCommandProcessor {
 
-	EXIT("exit",ExitCommandProcessor.class),
-	CLEAR("clear",ClearCommandProcessor.class),
-
-	;
-
-	private String name;
-	private Class<? extends CommandProcessor> clazz;
-
-	Command(String name,Class<? extends CommandProcessor> clazz) {
-		this.name = name;
-		this.clazz = clazz;
+	@Override
+	public boolean canExecute(CommandContext context) {
+		return !context.hasOptions();
 	}
 
-	static Command fromString(String name) {
-		Command targetCmd=null;
-		for(Command cmd:values()) {
-			if(cmd.name.equalsIgnoreCase(name)) {
-				targetCmd=cmd;
-				break;
-			}
+	@Override
+	public boolean execute(CommandContext options) {
+		if(console().isClearable()) {
+			console().clear();
+		} else {
+			console().error("Console cannot be cleared%n");
 		}
-		return targetCmd;
-	}
-
-	CommandProcessor createProcessor() {
-		try {
-			return clazz.newInstance();
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not prepare processor for command '"+this.name+"' ("+this.clazz.getCanonicalName()+")",e);
-		}
+		return true;
 	}
 
 }

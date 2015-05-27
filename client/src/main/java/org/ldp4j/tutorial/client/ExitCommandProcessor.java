@@ -26,17 +26,16 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.io.Console;
 
-class ExitCommandProcessor implements CommandProcessor {
+final class ExitCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
-	public boolean execute(Console console, CommandContext options) {
+	public boolean execute(CommandContext options) {
 		return false;
 	}
 
 	@Override
-	public boolean canExecute(Console console, CommandContext context) {
+	public boolean canExecute(CommandContext context) {
 		return !context.hasEntity() && !context.hasEntityTag() && !context.hasLastModified();
 	}
 

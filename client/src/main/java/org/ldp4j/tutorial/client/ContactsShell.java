@@ -26,7 +26,6 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.io.Console;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,7 +36,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class ContactsShell {
+public final class ContactsShell {
 
 	private static final class DefaultCommandContext implements CommandContext {
 
@@ -91,12 +90,17 @@ public class ContactsShell {
 			return this.helper.getOptionValue("e");
 		}
 
+		@Override
+		public boolean hasOptions() {
+			return this.helper.getOptions().length>0;
+		}
+
 	}
 
 	private final Options options;
-	private final Console console;
+	private final ShellConsole console;
 
-	private ContactsShell(Console console) {
+	private ContactsShell(ShellConsole console) {
 		this.console = console;
 		this.options =
 			new Options().
@@ -112,33 +116,33 @@ public class ContactsShell {
 		String[] commandArgs=ShellUtil.extractCommandArguments(commandLineParts);
 
 		CommandLineParser parser = new DefaultParser();
-		CommandLine commandLine = parser.parse( options,commandArgs);
+		CommandLine commandLine = parser.parse(this.options,commandArgs);
 
-		debug(command, commandLine);
+		// debug(command, commandLine);
 
-		return new DefaultCommandContext(command, rawCommandLine, commandLine);
+		return new DefaultCommandContext(command,rawCommandLine,commandLine);
 	}
 
-	private void debug(String command, CommandLine commandLine) {
-		this.console.format("- Command: %s%n",command);
+	protected void debug(String command, CommandLine commandLine) {
+		this.console.message("- Command: ").metadata(command).message("%n");
 		for(Option opt:options.getOptions()) {
 			if(commandLine.hasOption(opt.getOpt())) {
 				if(!opt.hasArg()) {
-					this.console.format("  + %s%n",opt.getOpt());
+					this.console.metadata("  + %s%n",opt.getOpt());
 				} else {
 					if(!opt.hasArgs()) {
-						this.console.format("  + %s: %s%n",opt.getOpt(),commandLine.getOptionValue(opt.getOpt()));
+						this.console.metadata("  + %s: ",opt.getOpt()).data("%s%n",commandLine.getOptionValue(opt.getOpt()));
 					} else {
-						this.console.format("  + %s: %s%n",opt.getOpt(),Arrays.toString(commandLine.getOptionValues(opt.getOpt())));
+						this.console.metadata("  + %s: ",opt.getOpt()).data("%s%n",Arrays.toString(commandLine.getOptionValues(opt.getOpt())));
 					}
 				}
 			}
 		}
 		List<String> argList = commandLine.getArgList();
 		if(!argList.isEmpty()) {
-			this.console.format("  + Arguments:%n");
+			this.console.metadata("  + Arguments:%n");
 			for(String arg:argList) {
-				this.console.format("    * %s:%n",arg);
+				this.console.metadata("    * ").data("%s%n",arg);
 			}
 		}
 	}
@@ -146,23 +150,31 @@ public class ContactsShell {
 	public void execute() {
 		boolean continueExecution=true;
 		while(continueExecution) {
-			this.console.format("contacts> ");
-			String commandLine = console.readLine();
+			this.console.prompt("contacts> ");
+			String commandLine = this.console.readLine();
+			if(commandLine.trim().isEmpty()) {
+				continue;
+			}
 			try {
 				CommandContext context = createCommandContext(commandLine);
 				CommandProcessor processor=ShellUtil.createProcessor(context.commandName());
-				if(processor.canExecute(console,context)) {
-					continueExecution=processor.execute(console, context);
+				processor.setConsole(this.console);
+				if(processor.canExecute(context)) {
+					continueExecution=processor.execute(context);
 				}
 			} catch (ParseException e) {
-				this.console.format("ERROR: Could not process command (%s)%n",e.getMessage());
+				this.console.error("ERROR: Could not process command (%s)%n",e.getMessage());
 			}
 		}
 	}
 
 	public static void main(String... args) {
-		ContactsShell shell=new ContactsShell(System.console());
+		ShellConsole console = ShellUtil.console();
+		String build=System.getProperty("shell.build","XXX");
+		console.title("ESWC 2015 - LDP4j Tutorial - Contacts Application Shell ").message("v%s%n",build);
+		ContactsShell shell=new ContactsShell(console);
 		shell.execute();
+		console.title("Bye!!!");
 	}
 
 }

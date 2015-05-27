@@ -26,18 +26,20 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.io.Console;
 
-final class NullCommandProcessor implements CommandProcessor {
+final class NullCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
-	public boolean execute(Console console, CommandContext options) {
+	public boolean execute(CommandContext options) {
 		return true;
 	}
 
 	@Override
-	public boolean canExecute(Console console, CommandContext context) {
-		console.format("ERROR: Unknown command '%s'%n",context.commandName());
+	public boolean canExecute(CommandContext context) {
+		console().
+			error("ERROR: Unknown command '").
+				metadata(context.commandName()).
+			error("'%n");
 		return false;
 	}
 }

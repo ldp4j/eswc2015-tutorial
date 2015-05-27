@@ -40,4 +40,6 @@ interface CommandContext {
 	boolean hasEntity();
 	String entity();
 
+	boolean hasOptions();
+
 }

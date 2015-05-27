@@ -26,12 +26,13 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.io.Console;
 
 interface CommandProcessor {
 
-	boolean canExecute(Console console, CommandContext context);
+	boolean canExecute(CommandContext context);
 
-	boolean execute(Console console, CommandContext options);
+	boolean execute(CommandContext options);
+
+	void setConsole(ShellConsole console);
 
 }

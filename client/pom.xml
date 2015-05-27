@@ -90,6 +90,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.2</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.fusesource.jansi</groupId>
 			<artifactId>jansi</artifactId>
 			<version>1.11</version>
@@ -151,6 +157,12 @@
 						<program>
 							<id>ContactsShell</id>
 							<mainClass>${app.main}</mainClass>
+							<jvmSettings>
+								<extraArguments>
+									<extraArgument>-Dshell.version=${project.version}</extraArgument>
+									<extraArgument>-Dshell.build=${ldp4j.buildNumber}</extraArgument>
+								</extraArguments>
+							</jvmSettings>
 						</program>
 					</programs>
 				</configuration>

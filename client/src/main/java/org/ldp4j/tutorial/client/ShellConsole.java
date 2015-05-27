@@ -26,38 +26,26 @@
  */
 package org.ldp4j.tutorial.client;
 
-enum Command {
+public interface ShellConsole {
 
-	EXIT("exit",ExitCommandProcessor.class),
-	CLEAR("clear",ClearCommandProcessor.class),
+	boolean isClearable();
 
-	;
+	ShellConsole clear();
 
-	private String name;
-	private Class<? extends CommandProcessor> clazz;
+	boolean isReadable();
 
-	Command(String name,Class<? extends CommandProcessor> clazz) {
-		this.name = name;
-		this.clazz = clazz;
-	}
+	String readLine();
 
-	static Command fromString(String name) {
-		Command targetCmd=null;
-		for(Command cmd:values()) {
-			if(cmd.name.equalsIgnoreCase(name)) {
-				targetCmd=cmd;
-				break;
-			}
-		}
-		return targetCmd;
-	}
+	ShellConsole title(String fmt, Object... args);
 
-	CommandProcessor createProcessor() {
-		try {
-			return clazz.newInstance();
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not prepare processor for command '"+this.name+"' ("+this.clazz.getCanonicalName()+")",e);
-		}
-	}
+	ShellConsole prompt(String fmt, Object... args);
+
+	ShellConsole error(String fmt, Object... args);
+
+	ShellConsole message(String fmt, Object... args);
+
+	ShellConsole metadata(String fmt, Object... args);
+
+	ShellConsole data(String fmt, Object... args);
 
 }
