@@ -60,6 +60,7 @@
 
 	<properties>
 		<ldp4j.version>1.0.0-SNAPSHOT</ldp4j.version>
+		<tomcat.http.port>80</tomcat.http.port>
 	</properties>
 
 	<dependencyManagement>
@@ -119,5 +120,44 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 	</dependencies>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots</id>
+			<url>http://repository.apache.org/snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.3-SNAPSHOT</version>
+				<configuration>
+					<!-- http port -->
+					<port>${tomcat.http.port}</port>
+					<!-- application path always starts with / -->
+					<path>/contacts</path>
+					<!-- optional path to a context file -->
+					<!--
+					<contextFile>${tomcatContextXml}</contextFile>
+					 -->
+					<!-- optional system propoerties you want to add -->
+					<systemProperties>
+						<appserver.base>${basedir}${file.separator}.container${file.separator}base</appserver.base>
+						<appserver.home>${basedir}${file.separator}.container${file.separator}home</appserver.home>
+						<java.io.tmpdir>${basedir}${file.separator}.container${file.separator}base${file.separator}tmp</java.io.tmpdir>
+					</systemProperties>
+					<!-- if you want to use test dependencies rather than only runtime -->
+					<useTestClasspath>false</useTestClasspath>
+					<!-- optional if you want to add some extra directories into the classloader -->
+					<additionalClasspathDirs>
+						<additionalClasspathDir></additionalClasspathDir>
+					</additionalClasspathDirs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
