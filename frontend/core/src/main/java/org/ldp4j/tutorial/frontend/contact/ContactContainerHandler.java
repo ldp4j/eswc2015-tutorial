@@ -28,7 +28,6 @@ package org.ldp4j.tutorial.frontend.contact;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -39,8 +38,8 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Contact;
+import org.ldp4j.tutorial.application.api.ContactsService;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.util.FormatUtil;
 import org.ldp4j.tutorial.frontend.util.IdentityUtil;
@@ -72,7 +71,10 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 	@Override
 	public DataSet get(ResourceSnapshot resource)
 			throws UnknownResourceException, ApplicationRuntimeException {
-		return DataSetFactory.createDataSet(resource.name());
+		// For the time there is nothing to return
+		return
+			DataSetFactory.
+				createDataSet(resource.name());
 	}
 
 	@Override
@@ -91,9 +93,8 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 		Person person=findPerson(personId);
 
 		Individual<?, ?> individual=
-			DataSetUtils.
-				newHelper(representation).
-					self();
+			IdentityUtil.
+				contactIndividual(representation, null);
 
 		Typed<Contact> typedContact=ContactMapper.toContact(individual);
 		ContactConstraints.validate(typedContact);
