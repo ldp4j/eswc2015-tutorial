@@ -31,6 +31,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -345,6 +346,12 @@ class ShellUtil {
 					metadata("  + %s : ",link.relation()).data("%s%n",link.value());
 			}
 		}
+	}
+
+	private static AtomicInteger counter=new AtomicInteger();
+
+	public static String nextResourceFile() {
+		return String.format("resource.%04X.%X.dat",counter.incrementAndGet(),System.currentTimeMillis());
 	}
 
 }

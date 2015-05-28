@@ -131,7 +131,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	protected final String requireEntityTag(CommandContext context) {
 		String entityTag=entityTag(context);
 		if(entityTag==null) {
-			throw new CommandRequirementException("ERROR: No entity tag available");
+			throw new CommandRequirementException("No entity tag available");
 		}
 		return entityTag;
 	}

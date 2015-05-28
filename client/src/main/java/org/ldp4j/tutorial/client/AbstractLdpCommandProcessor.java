@@ -57,8 +57,8 @@ public abstract class AbstractLdpCommandProcessor extends AbstractCommandProcess
 		} else if(statusCode==410) {
 			console().metadata("- Resource has been already deleted%n");
 		} else if(statusCode==412) {
-			console().metadata("- Current Last Modified: ").data(response.getFirstHeader("Last-Modified").getValue()).message("%n");
 			console().metadata("- Current Entity Tag: ").data(response.getFirstHeader("ETag").getValue()).message("%n");
+			console().metadata("- Current Last Modified: ").data(response.getFirstHeader("Last-Modified").getValue()).message("%n");
 		} else if(statusCode>=500) {
 			console().metadata("- Unexpected server failure: ").data("%d (%s)%n",statusCode,statusLine.getReasonPhrase());
 		} else if(statusCode>=400) {

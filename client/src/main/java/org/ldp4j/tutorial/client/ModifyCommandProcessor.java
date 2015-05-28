@@ -27,7 +27,7 @@
 package org.ldp4j.tutorial.client;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 
@@ -36,34 +36,31 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 
-final class GetCommandProcessor extends AbstractLdpCommandProcessor {
+final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 
+	private String entityTag;
 	private String location;
-	private String entity;
+	private String contentType;
+	private String content;
 
 	@Override
 	public boolean canExecute(CommandContext context) {
 		boolean result=false;
 		try {
+			this.entityTag=requireEntityTag(context);
 			this.location=requireTargetResource(context);
-			this.entity=requireEntity(context);
+			this.contentType=contentType(context);
+			this.content=requireEntity(context);
 			result=true;
 		} catch (CommandRequirementException e) {
 			console().error("ERROR: %s%n",e.getMessage());
 		}
 		return result;
-	}
-
-	private String requireEntity(CommandContext context) {
-		String entity = context.entity();
-		if(entity==null) {
-			entity=ShellUtil.nextResourceFile();
-		}
-		return entity;
 	}
 
 	@Override
@@ -76,60 +73,62 @@ final class GetCommandProcessor extends AbstractLdpCommandProcessor {
 		}
 
 		int statusCode = response.getStatusLine().getStatusCode();
-		Resource resource = refreshResource(this.location,response);
-		if(statusCode==200) {
+		Resource resource = refreshResource(this.location, response);
+		if(statusCode==204) {
 			repository().updateResource(resource);
-			console().message("Resource retrieved:%n");
-			ShellUtil.showResourceMetadata(console(),resource);
+			console().message("Resource modified:%n");
+			ShellUtil.showResourceMetadata(console(), resource);
 			ShellUtil.showLinks(console(),links);
-			ShellUtil.showResourceContent(console(),resource);
-			persist(this.entity,resource.entity());
+			ShellUtil.showResourceContent(console(), resource);
 		} else {
-			processUnexpectedResponse(response, "Cannot retrieve resource");
+			processUnexpectedResponse(response, "Could not modify resource");
 		}
-	}
-
-	private void persist(String entityResource, String entity) {
-		File file=new File(entityResource);
-		FileOutputStream fos=null;
-		try {
-			fos=new FileOutputStream(file);
-			IOUtils.write(entity, fos);
-			console().
-				message("Content persisted to ").
-				metadata(entityResource).
-				data("%n");
-		} catch (IOException e) {
-			console().
-				error("ERROR: Could not persist entity (%s)", e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
-		}
-
 	}
 
 	@Override
 	protected HttpUriRequest getRequest(CommandContext options, RequestConfig config) {
 		console().
-			message("Retrieving resource...%n");
+			message("Modifying resource...%n").
+			metadata("- If-Match    : ").data(this.entityTag).message("%n").
+			metadata("- Content-Type: ").data(this.contentType).message("%n").
+			metadata("- Content:%n").data(this.content).message("%n");
 
-		HttpGet method = new HttpGet(this.location);
-		method.setHeader("Accept", contentType(options)+"; charset=utf-8");
+		HttpEntity entity=
+			new StringEntity(
+				this.content,
+				ContentType.parse(this.contentType));
+
+		HttpPut method = new HttpPut(this.location);
+		method.setHeader("If-Match",this.entityTag);
+		method.setEntity(entity);
 		method.setConfig(config);
-
 		return method;
+	}
+
+	private String requireEntity(CommandContext context) {
+		String fileName=context.entity();
+		if(fileName==null) {
+			throw new CommandRequirementException("No entity available");
+		}
+		File file=new File(fileName);
+		if(!file.canRead()) {
+			throw new CommandRequirementException("Cannot read entity");
+		}
+		FileInputStream fis = null;
+		try {
+			fis=new FileInputStream(file);
+			return IOUtils.toString(fis);
+		} catch (IOException e) {
+			throw new CommandRequirementException("Cannot load entity",e);
+		} finally {
+			IOUtils.closeQuietly(fis);
+		}
 	}
 
 	private Resource refreshResource(String location, HttpResponse httpResponse) throws IOException {
 		Resource resource=repository().resolveResource(location);
 		if(resource==null) {
 			resource=repository().createResource(location);
-		}
-		HttpEntity entity = httpResponse.getEntity();
-		if(entity!=null) {
-			resource.
-				withContentType(entity.getContentType().getValue()).
-				withEntity(EntityUtils.toString(entity));
 		}
 		Header etag=httpResponse.getFirstHeader("ETag");
 		if(etag!=null) {

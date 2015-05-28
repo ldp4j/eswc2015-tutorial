@@ -33,7 +33,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpUriRequest;
 
-public class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
+final class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
 
 	private String entityTag;
 	private String location;
@@ -64,14 +64,13 @@ public class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
 
 	@Override
 	protected HttpUriRequest getRequest(CommandContext options, RequestConfig config) {
-		HttpDelete method = new HttpDelete(this.location);
-		method.setHeader("If-Match",this.entityTag);
-		method.setConfig(config);
-
 		console().
 			message("Deleting resource...%n").
 			metadata("- If-Match: ").data(this.entityTag).message("%n");
 
+		HttpDelete method = new HttpDelete(this.location);
+		method.setHeader("If-Match",this.entityTag);
+		method.setConfig(config);
 		return method;
 	}
 

@@ -34,6 +34,7 @@ enum Command {
 	SHOW_RESOURCE("show-resource",ShowResourceCommandProcessor.class),
 	GET("get-resource",GetCommandProcessor.class),
 	DELETE("delete-resource",DeleteCommandProcessor.class),
+	MODIFY("modify-resource",ModifyCommandProcessor.class),
 	;
 
 	private String name;
