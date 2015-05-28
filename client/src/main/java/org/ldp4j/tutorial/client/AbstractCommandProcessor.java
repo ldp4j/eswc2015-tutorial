@@ -83,6 +83,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	}
 
 	private ShellConsole console;
+	private ResourceRepository repository;
 
 	protected AbstractCommandProcessor() {
 	}
@@ -95,9 +96,18 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		return result;
 	}
 
+	protected final ResourceRepository repository() {
+		return this.repository;
+	}
+
 	@Override
 	public final void setConsole(ShellConsole console) {
 		this.console = console;
+	}
+
+	@Override
+	public final void setRepository(ResourceRepository repository) {
+		this.repository = repository;
 	}
 
 }

@@ -30,7 +30,10 @@ enum Command {
 
 	EXIT("exit",ExitCommandProcessor.class),
 	CLEAR("clear",ClearCommandProcessor.class),
-
+	LIST_RESOURCES("list-resources",ListResourcesCommandProcessor.class),
+	SHOW_RESOURCE("show-resource",ShowResourceCommandProcessor.class),
+	GET("get-resource",GetCommandProcessor.class),
+	DELETE("delete-resource",DeleteCommandProcessor.class),
 	;
 
 	private String name;

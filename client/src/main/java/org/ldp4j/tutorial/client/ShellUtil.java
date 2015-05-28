@@ -255,4 +255,12 @@ class ShellUtil {
 		return result;
 	}
 
+	static void showResource(ShellConsole console, Resource resource) {
+		console.
+			metadata("Content Type  : ").data("%s%n",resource.contentType()).
+			metadata("Entity Tag    : ").data("%s%n",resource.entityTag()).
+			metadata("Last Modified : ").data("%s%n",resource.lastModified()).
+			metadata("Representation:%n").data(resource.entity()).data("%n");
+	}
+
 }

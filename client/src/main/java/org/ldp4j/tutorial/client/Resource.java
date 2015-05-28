@@ -26,26 +26,61 @@
  */
 package org.ldp4j.tutorial.client;
 
-interface CommandContext {
+final class Resource {
 
-	String commandLine();
-	String commandName();
+	private final String location;
 
-	boolean hasEntityTag();
-	String entityTag();
+	private String entityTag;
+	private String lastModified;
+	private String contentType;
+	private String entity;
 
-	boolean hasLastModified();
-	String lastModified();
+	Resource(String location) {
+		this.location=location;
+	}
 
-	boolean hasEntity();
-	String entity();
+	Resource(Resource resource) {
+		this(resource.location());
+		withContentType(resource.contentType());
+		withEntityTag(resource.entityTag());
+		withLastModified(resource.lastModified());
+		withEntity(resource.entity());
+	}
 
-	boolean hasContentType();
-	String contentType();
+	public String location() {
+		return this.location;
+	}
+	public String entityTag() {
+		return this.entityTag;
+	}
+	public String lastModified() {
+		return this.lastModified;
+	}
+	public String contentType() {
+		return this.contentType;
+	}
+	public String entity() {
+		return this.entity;
+	}
 
-	boolean hasTarget();
-	String target();
+	Resource withEntityTag(String etag) {
+		this.entityTag = etag;
+		return this;
+	}
 
-	boolean hasOptions();
+	Resource withLastModified(String lastModified) {
+		this.lastModified = lastModified;
+		return this;
+	}
+
+	Resource withContentType(String contentType) {
+		this.contentType = contentType;
+		return this;
+	}
+
+	Resource withEntity(String entity) {
+		this.entity = entity;
+		return this;
+	}
 
 }

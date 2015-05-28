@@ -26,26 +26,31 @@
  */
 package org.ldp4j.tutorial.client;
 
-interface CommandContext {
+final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
 
-	String commandLine();
-	String commandName();
+	@Override
+	public boolean canExecute(CommandContext context) {
+		boolean result=false;
+		if(!context.hasTarget()) {
+			console().error("ERROR: No target resource specified%n");
+		} else if(context.hasOptions()) {
+			console().error("ERROR: No command options allowed%n");
+		} else {
+			result=true;
+		}
+		return result;
+	}
 
-	boolean hasEntityTag();
-	String entityTag();
-
-	boolean hasLastModified();
-	String lastModified();
-
-	boolean hasEntity();
-	String entity();
-
-	boolean hasContentType();
-	String contentType();
-
-	boolean hasTarget();
-	String target();
-
-	boolean hasOptions();
+	@Override
+	public boolean execute(CommandContext options) {
+		Resource resource=repository().resolveResource(options.target());
+		if(resource==null) {
+			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
+		} else {
+			console().message("Cached resource [").message(options.target()).message("]%n");
+			ShellUtil.showResource(console(),resource);
+		}
+		return true;
+	}
 
 }

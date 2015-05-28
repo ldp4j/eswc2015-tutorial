@@ -26,26 +26,25 @@
  */
 package org.ldp4j.tutorial.client;
 
-interface CommandContext {
+import java.util.List;
 
-	String commandLine();
-	String commandName();
 
-	boolean hasEntityTag();
-	String entityTag();
+final class ListResourcesCommandProcessor extends AbstractCommandProcessor {
 
-	boolean hasLastModified();
-	String lastModified();
+	@Override
+	public boolean canExecute(CommandContext context) {
+		return !context.hasOptions() && !context.hasTarget();
+	}
 
-	boolean hasEntity();
-	String entity();
-
-	boolean hasContentType();
-	String contentType();
-
-	boolean hasTarget();
-	String target();
-
-	boolean hasOptions();
+	@Override
+	public boolean execute(CommandContext options) {
+		console().message("Resources:%n");
+		List<String> resources=repository().list();
+		for(String resource:resources) {
+			console().data("- %s%n",resource);
+		}
+		console().metadata("-- %d resource(s) retrieved%n",resources.size());
+		return true;
+	}
 
 }

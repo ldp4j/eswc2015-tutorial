@@ -26,26 +26,46 @@
  */
 package org.ldp4j.tutorial.client;
 
-interface CommandContext {
+import java.util.List;
+import java.util.Map;
 
-	String commandLine();
-	String commandName();
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 
-	boolean hasEntityTag();
-	String entityTag();
+public final class ResourceRepository {
 
-	boolean hasLastModified();
-	String lastModified();
+	private final Map<String,Resource> resources;
 
-	boolean hasEntity();
-	String entity();
+	private ResourceRepository() {
+		this.resources=Maps.newLinkedHashMap();
+	}
 
-	boolean hasContentType();
-	String contentType();
+	public Resource createResource(String location) {
+		return new Resource(location);
+	}
 
-	boolean hasTarget();
-	String target();
+	public Resource resolveResource(String location) {
+		Resource resource = this.resources.get(location);
+		if(resource!=null) {
+			resource=new Resource(resource);
+		}
+		return resource;
+	}
 
-	boolean hasOptions();
+	public void updateResource(Resource resource) {
+		this.resources.put(resource.location(),resource);
+	}
+
+	public void delete(String location) {
+		this.resources.remove(location);
+	}
+
+	public static ResourceRepository create() {
+		return new ResourceRepository();
+	}
+
+	public List<String> list() {
+		return ImmutableList.copyOf(this.resources.keySet());
+	}
 
 }

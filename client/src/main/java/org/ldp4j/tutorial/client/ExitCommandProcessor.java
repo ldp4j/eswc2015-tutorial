@@ -36,7 +36,7 @@ final class ExitCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
 	public boolean canExecute(CommandContext context) {
-		return !context.hasEntity() && !context.hasEntityTag() && !context.hasLastModified();
+		return !context.hasOptions() && !context.hasTarget();
 	}
 
 }

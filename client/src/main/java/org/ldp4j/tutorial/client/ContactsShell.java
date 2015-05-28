@@ -95,17 +95,44 @@ public final class ContactsShell {
 			return this.helper.getOptions().length>0;
 		}
 
+		@Override
+		public boolean hasContentType() {
+			return this.helper.hasOption("e");
+		}
+
+		@Override
+		public String contentType() {
+			return this.helper.getOptionValue("ct");
+		}
+
+		@Override
+		public boolean hasTarget() {
+			return target()!=null;
+		}
+
+		@Override
+		public String target() {
+			List<String> argList = this.helper.getArgList();
+			if(argList!=null && !argList.isEmpty()) {
+				return argList.get(0);
+			}
+			return null;
+		}
+
 	}
 
 	private final Options options;
 	private final ShellConsole console;
+	private final ResourceRepository repository;
 
-	private ContactsShell(ShellConsole console) {
+	private ContactsShell(ShellConsole console, ResourceRepository repository) {
 		this.console = console;
+		this.repository = repository;
 		this.options =
 			new Options().
 				addOption("et","entity-tag",    true, "use entity tag").
 				addOption("lm","last-modified", true, "use last modified date").
+				addOption("ct","content-type",  true, "use content type").
 				addOption("e","entity", true, "use entity");
 	}
 
@@ -159,6 +186,7 @@ public final class ContactsShell {
 				CommandContext context = createCommandContext(commandLine);
 				CommandProcessor processor=ShellUtil.createProcessor(context.commandName());
 				processor.setConsole(this.console);
+				processor.setRepository(this.repository);
 				if(processor.canExecute(context)) {
 					continueExecution=processor.execute(context);
 				}
@@ -172,7 +200,7 @@ public final class ContactsShell {
 		ShellConsole console = ShellUtil.console();
 		String build=System.getProperty("shell.build","XXX");
 		console.title("ESWC 2015 - LDP4j Tutorial - Contacts Application Shell ").message("v%s%n",build);
-		ContactsShell shell=new ContactsShell(console);
+		ContactsShell shell=new ContactsShell(console,ResourceRepository.create());
 		shell.execute();
 		console.title("Bye!!!");
 	}

@@ -35,4 +35,6 @@ interface CommandProcessor {
 
 	void setConsole(ShellConsole console);
 
+	void setRepository(ResourceRepository repository);
+
 }
