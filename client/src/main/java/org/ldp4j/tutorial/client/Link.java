@@ -26,33 +26,62 @@
  */
 package org.ldp4j.tutorial.client;
 
-final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
+import java.io.IOException;
+import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-	@Override
-	public boolean canExecute(CommandContext context) {
-		boolean result=false;
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target resource specified%n");
-		} else if(context.hasOptions()) {
-			console().error("ERROR: No command options allowed%n");
-		} else {
-			result=true;
+class Link implements Comparable<Link> {
+
+	private static final String LINK_PATTERN="\\s*<(.*)>\\s*;\\s*rel=(.*)";
+
+	private final String relation;
+	private final URI value;
+
+	private Link(String relation, URI value) {
+		this.relation = relation;
+		this.value = value;
+	}
+
+	public String relation() {
+		return relation;
+	}
+
+	public URI value() {
+		return value;
+	}
+
+	public String toString() {
+		return "<"+this.value+"> ; rel=\""+this.relation+"\"";
+	}
+
+	public static Link fromString(String rawLink) throws IOException {
+		Pattern pattern = Pattern.compile(LINK_PATTERN);
+		Matcher matcher = pattern.matcher(rawLink);
+		if(matcher.matches()) {
+			return new Link(matcher.group(2),URI.create(matcher.group(1)));
 		}
-		return result;
+		throw new IOException("Invalid link");
+	}
+
+	public static String toString(Link link) {
+		return "<"+link.value+"> ; rel=\""+link.relation+"\"";
 	}
 
 	@Override
-	public boolean execute(CommandContext options) {
-		Resource resource=repository().resolveResource(options.target());
-		if(resource==null) {
-			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
-		} else {
-			console().message("Cached resource [").message(options.target()).message("]%n");
-			ShellConsole console1 = console();
-			ShellUtil.showResourceMetadata(console1, resource);
-			ShellUtil.showResourceContent(console1, resource);
+	public int compareTo(Link that) {
+		if(this==that) {
+			return 0;
 		}
-		return true;
+		if(that==null) {
+			return -1;
+		}
+		int result=this.relation.compareTo(that.relation);
+		if(result==0) {
+			result=this.value.compareTo(that.value);
+		}
+
+		return result;
 	}
 
 }

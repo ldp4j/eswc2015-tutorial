@@ -29,6 +29,8 @@ package org.ldp4j.tutorial.client;
 import java.io.Console;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Scanner;
+import java.util.SortedSet;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -38,28 +40,43 @@ class ShellUtil {
 
 	private static final String[] EMPTY_ARGS = new String[]{};
 
-	private static final class NativeShellConsole implements ShellConsole {
+	private static final class DefaultShellConsole implements
+			ShellConsole {
+		private final Scanner scanner=new Scanner(System.in);
 
-		private final Console console;
+		@Override
+		public boolean isClearable() {
+			return false;
+		}
 
-		private NativeShellConsole(Console console) {
-			this.console = console;
+		@Override
+		public ShellConsole clear() {
+			throw new UnsupportedOperationException("Console is not clearable");
+		}
+
+		@Override
+		public boolean isReadable() {
+			return true;
+		}
+
+		@Override
+		public String readLine() {
+			return this.scanner.nextLine();
 		}
 
 		@Override
 		public ShellConsole data(String fmt, Object... args) {
-			this.console.format(fmt,args);
+			try {
+				System.out.printf(fmt,args);
+			} catch (Exception e) {
+				showFailure(e, fmt, args);
+			}
 			return this;
 		}
 
 		@Override
 		public ShellConsole metadata(String fmt, Object... args) {
 			return data(fmt,args);
-		}
-
-		@Override
-		public String readLine() {
-			return this.console.readLine();
 		}
 
 		@Override
@@ -80,6 +97,15 @@ class ShellUtil {
 		@Override
 		public ShellConsole error(String fmt, Object... args) {
 			return data(fmt,args);
+		}
+	}
+
+	private static final class NativeShellConsole implements ShellConsole {
+
+		private final Console console;
+
+		private NativeShellConsole(Console console) {
+			this.console = console;
 		}
 
 		@Override
@@ -97,6 +123,46 @@ class ShellUtil {
 			return true;
 		}
 
+		@Override
+		public String readLine() {
+			return this.console.readLine();
+		}
+
+		@Override
+		public ShellConsole data(String fmt, Object... args) {
+			try {
+				this.console.format(fmt,args);
+			} catch (Exception e) {
+				showFailure(e, fmt, args);
+			}
+			return this;
+		}
+
+		@Override
+		public ShellConsole metadata(String fmt, Object... args) {
+			return data(fmt,args);
+		}
+
+		@Override
+		public ShellConsole message(String fmt, Object... args) {
+			return data(fmt,args);
+		}
+
+		@Override
+		public ShellConsole title(String fmt, Object... args) {
+			return data(fmt,args);
+		}
+
+		@Override
+		public ShellConsole prompt(String fmt, Object... args) {
+			return data(fmt,args);
+		}
+
+		@Override
+		public ShellConsole error(String fmt, Object... args) {
+			return data(fmt,args);
+		}
+
 	}
 
 	private static final class AnsiShellConsole implements ShellConsole {
@@ -111,40 +177,34 @@ class ShellUtil {
 
 		@Override
 		public ShellConsole data(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bg(Color.DEFAULT).
-						fg(Color.DEFAULT).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			colorize(Color.DEFAULT, Color.DEFAULT, fmt, args);
 			return this;
+		}
+
+		private void colorize(Color bg, Color fg, String fmt, Object... args) {
+			try {
+				Ansi ansi =
+					Ansi.
+						ansi().
+							bg(bg).
+							fg(fg).
+							a(String.format(fmt,args)).
+							reset();
+				this.output.print(ansi);
+			} catch (Exception e) {
+				showFailure(e, fmt, args);
+			}
 		}
 
 		@Override
 		public ShellConsole metadata(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bg(Color.DEFAULT).
-						fg(Color.YELLOW).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			colorize(Color.DEFAULT, Color.YELLOW, fmt, args);
 			return this;
 		}
 
 		@Override
 		public ShellConsole message(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bg(Color.DEFAULT).
-						fg(Color.GREEN).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			colorize(Color.DEFAULT, Color.GREEN, fmt, args);
 			return this;
 		}
 
@@ -155,42 +215,31 @@ class ShellUtil {
 
 		@Override
 		public ShellConsole title(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bold().
-						bg(Color.DEFAULT).
-						fg(Color.RED).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			try {
+				Ansi ansi =
+					Ansi.
+						ansi().
+							bold().
+							bg(Color.DEFAULT).
+							fg(Color.RED).
+							a(String.format(fmt,args)).
+							reset();
+				this.output.print(ansi);
+			} catch (Exception e) {
+				showFailure(e, fmt, args);
+			}
 			return this;
 		}
 
 		@Override
 		public ShellConsole prompt(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bold().
-						bg(Color.DEFAULT).
-						fg(Color.CYAN).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			colorize(Color.DEFAULT, Color.CYAN, fmt, args);
 			return this;
 		}
 
 		@Override
 		public ShellConsole error(String fmt, Object... args) {
-			Ansi ansi =
-				Ansi.
-					ansi().
-						bg(Color.DEFAULT).
-						fg(Color.RED).
-						a(String.format(fmt,args)).
-						reset();
-			this.output.print(ansi);
+			colorize(Color.DEFAULT, Color.RED, fmt, args);
 			return this;
 		}
 
@@ -220,12 +269,32 @@ class ShellUtil {
 	private ShellUtil() {
 	}
 
+	private static void showFailure(Exception failure, String fmt, Object... args) {
+		System.err.printf("[INTERNAL ERROR] Could not print message: %s%n- Offending message:%n", failure.getMessage());
+		System.err.println("  + Format: "+fmt);
+		if(args.length>0) {
+			System.err.println("  + Arguments: ");
+			for(Object arg:args) {
+				StringBuilder builder=
+					new StringBuilder().
+						append("    * ").
+						append(arg.getClass().getCanonicalName()).
+						append(" : ").
+						append(arg);
+				System.err.println(builder);
+			}
+		}
+	}
+
 	static ShellConsole console() {
 		String property = System.getProperty("shell.console","native");
-		ShellConsole console = new NativeShellConsole(System.console());
-
-		if(property.equalsIgnoreCase("ansi")) {
-			console=new AnsiShellConsole(AnsiConsole.out(), console);
+		ShellConsole console=new DefaultShellConsole();
+		Console nativeConsole = System.console();
+		if(nativeConsole!=null) {
+			console = new NativeShellConsole(nativeConsole);
+			if(property.equalsIgnoreCase("ansi")) {
+				console=new AnsiShellConsole(AnsiConsole.out(), console);
+			}
 		}
 		return console;
 	}
@@ -255,12 +324,27 @@ class ShellUtil {
 		return result;
 	}
 
-	static void showResource(ShellConsole console, Resource resource) {
+	static void showResourceContent(ShellConsole console, Resource resource) {
 		console.
-			metadata("Content Type  : ").data("%s%n",resource.contentType()).
-			metadata("Entity Tag    : ").data("%s%n",resource.entityTag()).
-			metadata("Last Modified : ").data("%s%n",resource.lastModified()).
-			metadata("Representation:%n").data(resource.entity()).data("%n");
+			metadata("- Content:%n").data(resource.entity()).data("%n");
+	}
+
+	static void showResourceMetadata(ShellConsole console, Resource resource) {
+		console.
+			metadata("- Content Type : ").data("%s%n",resource.contentType()).
+			metadata("- Entity Tag   : ").data("%s%n",resource.entityTag()).
+			metadata("- Last Modified: ").data("%s%n",resource.lastModified());
+	}
+
+	public static void showLinks(ShellConsole console, Links links) {
+		SortedSet<Link> all = links.all();
+		if(!all.isEmpty()) {
+			console.metadata("- Links: %n");
+			for(Link link:all) {
+				console.
+					metadata("  + %s : ",link.relation()).data("%s%n",link.value());
+			}
+		}
 	}
 
 }

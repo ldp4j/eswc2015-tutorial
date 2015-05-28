@@ -26,6 +26,9 @@
  */
 package org.ldp4j.tutorial.client;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public abstract class AbstractCommandProcessor implements CommandProcessor {
 
 
@@ -110,4 +113,37 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		this.repository = repository;
 	}
 
+	protected final String requireTargetResource(CommandContext context) {
+		if(!context.hasTarget()) {
+			throw new CommandRequirementException("No target specified");
+		}
+		try {
+			URI uri = new URI(context.target());
+			if(!(uri.isAbsolute() && uri.getScheme().equalsIgnoreCase("http"))) {
+				throw new CommandRequirementException("Invalid target resource (not an absolute HTTP url)");
+			}
+			return context.target();
+		} catch (URISyntaxException e) {
+			throw new CommandRequirementException("Invalid target resource ("+e.getMessage()+")",e);
+		}
+	}
+
+	protected final String requireEntityTag(CommandContext context) {
+		String entityTag=entityTag(context);
+		if(entityTag==null) {
+			throw new CommandRequirementException("ERROR: No entity tag available");
+		}
+		return entityTag;
+	}
+
+	protected final String entityTag(CommandContext options) {
+		String rawEntityTag=options.entityTag();
+		if(rawEntityTag==null) {
+			Resource resource = repository().resolveResource(options.target());
+			if(resource!=null) {
+				rawEntityTag=resource.entityTag();
+			}
+		}
+		return rawEntityTag;
+	}
 }

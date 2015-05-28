@@ -28,74 +28,65 @@ package org.ldp4j.tutorial.client;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.util.EntityUtils;
 
-public class GetCommandProcessor extends AbstractCommandProcessor {
+public class GetCommandProcessor extends AbstractLdpCommandProcessor {
+
+	private String location;
 
 	@Override
 	public boolean canExecute(CommandContext context) {
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target specified");
-			return false;
-		}
+		boolean result=false;
 		try {
-			URI uri = new URI(context.target());
-			boolean result = uri.isAbsolute() && uri.getScheme().equalsIgnoreCase("http");
-			if(!result) {
-				console().
-					error("ERROR: Invalid target resource (not an absolute HTTP url)%n");
-			}
-			return result;
-		} catch (URISyntaxException e) {
-			console().
-				error("ERROR: Invalid target '").
-				metadata(context.target()).
-				error("' (%s)%n",e.getMessage());
-			return false;
+			this.location=requireTargetResource(context);
+			result=true;
+		} catch (CommandRequirementException e) {
+			console().error("ERROR: %s%n",e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	protected void processResponse(HttpResponse response) throws IOException {
+		Links links = getLinks(response);
+		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
+			console().error("Not a LDP resource%n");
+			ShellUtil.showLinks(console(),links);
+			return;
+		}
+
+		int statusCode = response.getStatusLine().getStatusCode();
+		Resource resource = refreshResource(this.location, response);
+		if(statusCode==200) {
+			repository().updateResource(resource);
+			ShellUtil.showResourceMetadata(console(), resource);
+			ShellUtil.showLinks(console(),links);
+			ShellUtil.showResourceContent(console(), resource);
+		} else {
+			processUnexpectedResponse(response, "Cannot retrieve resource");
 		}
 	}
 
 	@Override
-	public boolean execute(CommandContext options) {
-		CloseableHttpClient httpClient=HttpClients.createDefault();
-		CloseableHttpResponse httpResponse=null;
-		String location = options.target();
-		HttpGet httpGet=createGetMethod(location,contentType(options));
-		try {
-			httpResponse = httpClient.execute(httpGet);
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			Resource resource = refreshResource(location, httpResponse);
-			if(statusCode==200) {
-				repository().updateResource(resource);
-				ShellUtil.showResource(console(),resource);
-			} else if(statusCode==404) {
-				console().error("Resource not found%n");
-			} else if(statusCode==410) {
-				console().error("Resource has been already deleted%n");
-			} else {
-				console().error("Unexpected response: %d (%s)%n",statusCode,httpResponse.getStatusLine().getReasonPhrase());
-			}
-		} catch (Exception cause) {
-			console().error("Communication with the server failed: %s%n",cause.getMessage());
-		} finally {
-			IOUtils.closeQuietly(httpResponse);
-			IOUtils.closeQuietly(httpClient);
-		}
-		return true;
+	protected HttpUriRequest getRequest(CommandContext options, RequestConfig config) {
+		HttpGet method = new HttpGet(this.location);
+		method.setHeader("Accept", contentType(options)+"; charset=utf-8");
+		method.setConfig(config);
+
+		console().
+			message("Retrieving resource...%n");
+
+		return method;
 	}
 
-	private Resource refreshResource(String location,
-			CloseableHttpResponse httpResponse) throws IOException {
+	private Resource refreshResource(String location, HttpResponse httpResponse) throws IOException {
 		Resource resource=repository().resolveResource(location);
 		if(resource==null) {
 			resource=repository().createResource(location);
@@ -123,22 +114,6 @@ public class GetCommandProcessor extends AbstractCommandProcessor {
 			rawContentType="text/turtle";
 		}
 		return rawContentType;
-	}
-
-
-	private HttpGet createGetMethod(String location, String contentType) {
-		HttpGet httpGet = new HttpGet(location);
-		httpGet.setHeader("Accept", contentType+"; charset=utf-8");
-		httpGet.setHeader("User-Agent", " Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36");
-		RequestConfig config =
-			RequestConfig.
-				custom().
-					setConnectTimeout(5000).
-					setRedirectsEnabled(true).
-					setCircularRedirectsAllowed(false).
-					build();
-		httpGet.setConfig(config);
-		return httpGet;
 	}
 
 }

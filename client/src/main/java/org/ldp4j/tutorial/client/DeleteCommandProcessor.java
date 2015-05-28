@@ -26,107 +26,53 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.methods.HttpUriRequest;
 
-public class DeleteCommandProcessor extends AbstractCommandProcessor {
+public class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
 
 	private String entityTag;
+	private String location;
 
 	@Override
 	public boolean canExecute(CommandContext context) {
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target specified");
-			return false;
-		}
+		boolean result=false;
 		try {
-			URI uri = new URI(context.target());
-			if(!(uri.isAbsolute() && uri.getScheme().equalsIgnoreCase("http"))) {
-				console().
-					error("ERROR: Invalid target resource (not an absolute HTTP url)%n");
-				return false;
-			}
-			this.entityTag=entityTag(context);
-			if(this.entityTag==null) {
-				console().
-					error("ERROR: No entity tag specified%n");
-				return false;
-			}
-			return true;
-		} catch (URISyntaxException e) {
-			console().
-				error("ERROR: Invalid target '").
-				metadata(context.target()).
-				error("' (%s)%n",e.getMessage());
-			return false;
+			this.entityTag=requireEntityTag(context);
+			this.location=requireTargetResource(context);
+			result=true;
+		} catch (CommandRequirementException e) {
+			console().error("ERROR: %s%n",e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	protected void processResponse(HttpResponse response) throws IOException {
+		int statusCode = response.getStatusLine().getStatusCode();
+		if(statusCode==204) {
+			repository().delete(this.location);
+			console().message("Resource deleted%n");
+		} else {
+			processUnexpectedResponse(response, "Could not delete resource");
 		}
 	}
 
 	@Override
-	public boolean execute(CommandContext options) {
-		CloseableHttpClient httpClient=HttpClients.createDefault();
-		CloseableHttpResponse httpResponse=null;
-		String location = options.target();
-		HttpDelete httpGet=createHttpMethod(location,entityTag(options));
-		try {
-			httpResponse = httpClient.execute(httpGet);
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			if(statusCode==204) {
-				repository().delete(options.target());
-				console().message("Resource deleted%n");
-			} else if(statusCode==404) {
-				console().error("Resource not found%n");
-			} else if(statusCode==410) {
-				console().error("Resource has been already deleted%n");
-			} else if(statusCode==412) {
-				console().error("Cannot delete resource%n");
-				console().metadata("- Current Last Modified: ").data(httpResponse.getFirstHeader("Last-Modified").getValue()).message("%n");
-				console().metadata("- Current Entity Tag: ").data(httpResponse.getFirstHeader("ETag").getValue()).message("%n");
-			} else {
-				console().error("Unexpected response: %d (%s)%n",statusCode,httpResponse.getStatusLine().getReasonPhrase());
-			}
-		} catch (Exception cause) {
-			console().error("Communication with the server failed: %s%n",cause.getMessage());
-		} finally {
-			IOUtils.closeQuietly(httpResponse);
-			IOUtils.closeQuietly(httpClient);
-		}
-		return true;
-	}
+	protected HttpUriRequest getRequest(CommandContext options, RequestConfig config) {
+		HttpDelete method = new HttpDelete(this.location);
+		method.setHeader("If-Match",this.entityTag);
+		method.setConfig(config);
 
-	private String entityTag(CommandContext options) {
-		String rawEntityTag=options.entityTag();
-		if(rawEntityTag==null) {
-			Resource resource = repository().resolveResource(options.target());
-			if(resource!=null) {
-				rawEntityTag=resource.entityTag();
-			}
-		}
-		return rawEntityTag;
-	}
-
-	private HttpDelete createHttpMethod(String location, String entityTag) {
-		HttpDelete httpGet = new HttpDelete(location);
-		httpGet.setHeader("If-Match",entityTag);
-		RequestConfig config =
-			RequestConfig.
-				custom().
-					setConnectTimeout(5000).
-					setRedirectsEnabled(true).
-					setCircularRedirectsAllowed(false).
-					build();
-		httpGet.setConfig(config);
 		console().
 			message("Deleting resource...%n").
-			metadata("- If-Match: ").data(entityTag).message("%n");
-		return httpGet;
+			metadata("- If-Match: ").data(this.entityTag).message("%n");
+
+		return method;
 	}
 
 }

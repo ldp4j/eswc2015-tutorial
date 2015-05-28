@@ -26,33 +26,32 @@
  */
 package org.ldp4j.tutorial.client;
 
-final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
+import java.net.URI;
 
-	@Override
-	public boolean canExecute(CommandContext context) {
-		boolean result=false;
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target resource specified%n");
-		} else if(context.hasOptions()) {
-			console().error("ERROR: No command options allowed%n");
-		} else {
-			result=true;
-		}
-		return result;
-	}
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
-	@Override
-	public boolean execute(CommandContext options) {
-		Resource resource=repository().resolveResource(options.target());
-		if(resource==null) {
-			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
-		} else {
-			console().message("Cached resource [").message(options.target()).message("]%n");
-			ShellConsole console1 = console();
-			ShellUtil.showResourceMetadata(console1, resource);
-			ShellUtil.showResourceContent(console1, resource);
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
+@RunWith(JUnitParamsRunner.class)
+public class LinkTest {
+
+	@Test
+	@Parameters(
+		{
+			"http://www.w3.org/ns/ldp#Resource,type",
+			"http://www.w3.org/ns/ldp#BasicResource,type",
 		}
-		return true;
+	)
+	public void testFromString(String value, String relation) throws Exception {
+		Link link = Link.fromString("<"+value+"> ; rel="+relation);
+		assertThat(link,notNullValue());
+		assertThat(link.relation(),equalTo(relation));
+		assertThat(link.value(),equalTo(URI.create(value)));
 	}
 
 }

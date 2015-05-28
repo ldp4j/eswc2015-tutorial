@@ -26,33 +26,19 @@
  */
 package org.ldp4j.tutorial.client;
 
-final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
+public class CommandRequirementException extends RuntimeException {
 
-	@Override
-	public boolean canExecute(CommandContext context) {
-		boolean result=false;
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target resource specified%n");
-		} else if(context.hasOptions()) {
-			console().error("ERROR: No command options allowed%n");
-		} else {
-			result=true;
-		}
-		return result;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -303393541002465473L;
+
+	public CommandRequirementException(String message) {
+		super(message);
 	}
 
-	@Override
-	public boolean execute(CommandContext options) {
-		Resource resource=repository().resolveResource(options.target());
-		if(resource==null) {
-			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
-		} else {
-			console().message("Cached resource [").message(options.target()).message("]%n");
-			ShellConsole console1 = console();
-			ShellUtil.showResourceMetadata(console1, resource);
-			ShellUtil.showResourceContent(console1, resource);
-		}
-		return true;
+	public CommandRequirementException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

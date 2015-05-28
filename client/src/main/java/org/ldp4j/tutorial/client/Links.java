@@ -26,33 +26,61 @@
  */
 package org.ldp4j.tutorial.client;
 
-final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.SortedSet;
 
-	@Override
-	public boolean canExecute(CommandContext context) {
-		boolean result=false;
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target resource specified%n");
-		} else if(context.hasOptions()) {
-			console().error("ERROR: No command options allowed%n");
-		} else {
-			result=true;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableList.Builder;
+
+final class Links {
+
+	private final Multimap<String,Link> links;
+
+	private Links() {
+		this.links=LinkedHashMultimap.create();
+	}
+
+	URI firstValue(String relation) {
+		URI result = null;
+		List<URI> values = values(relation);
+		if(!values.isEmpty()) {
+			result=values.get(0);
 		}
 		return result;
 	}
 
-	@Override
-	public boolean execute(CommandContext options) {
-		Resource resource=repository().resolveResource(options.target());
-		if(resource==null) {
-			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
-		} else {
-			console().message("Cached resource [").message(options.target()).message("]%n");
-			ShellConsole console1 = console();
-			ShellUtil.showResourceMetadata(console1, resource);
-			ShellUtil.showResourceContent(console1, resource);
+
+	List<URI> values(String relation) {
+		Builder<URI> builder = ImmutableList.<URI>builder();
+		Collection<Link> relationLinks = this.links.get(relation);
+		if(relationLinks!=null) {
+			for(Link link:relationLinks) {
+				builder.add(link.value());
+			}
 		}
-		return true;
+		return builder.build();
+	}
+
+	boolean hasLink(String relation, URI value) {
+		return values(relation).contains(value);
+	}
+
+	Links withLink(Link link) {
+		this.links.put(link.relation(), link);
+		return this;
+	}
+
+	SortedSet<Link> all() {
+		return ImmutableSortedSet.copyOf(this.links.values());
+	}
+
+	static Links create() {
+		return new Links();
 	}
 
 }
