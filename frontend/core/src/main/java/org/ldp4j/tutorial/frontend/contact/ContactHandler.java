@@ -130,7 +130,7 @@ public class ContactHandler extends Serviceable implements ResourceHandler, Modi
 		try {
 			session.modify(resource);
 			session.saveChanges();
-			info("Updated contact %s : %s",FormatUtil.toString(currentContact));
+			info("Updated contact %s : %s",contactId,FormatUtil.toString(currentContact));
 		} catch (WriteSessionException e) {
 			ContactMapper.copy(backupContact, currentContact);
 			throw unexpectedFailure(e, "Contact %s update failed",contactId);
