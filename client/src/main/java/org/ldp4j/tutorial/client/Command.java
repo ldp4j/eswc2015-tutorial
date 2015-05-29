@@ -35,6 +35,7 @@ enum Command {
 	GET("get-resource",GetCommandProcessor.class),
 	DELETE("delete-resource",DeleteCommandProcessor.class),
 	MODIFY("modify-resource",ModifyCommandProcessor.class),
+	CREATE("create-resource",CreateCommandProcessor.class),
 	;
 
 	private String name;

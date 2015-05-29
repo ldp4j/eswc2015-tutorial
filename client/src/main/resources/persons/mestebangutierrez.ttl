@@ -25,26 +25,10 @@
 # #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 #
 
-# Set root logger level to DEBUG and its only appender to A1.
-log4j.rootLogger=OFF
-log4j.logger.org.ldp4j.tutorial=TRACE, file
-log4j.additivity.org.ldp4j.tutorial=false
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-log4j.logger.org.apache.http=DEBUG, file
-log4j.logger.org.apache.http.wire=ERROR, file
-log4j.logger.org.apache.http.impl.conn=DEBUG, file
-log4j.logger.org.apache.http.impl.client=DEBUG, file
-log4j.logger.org.apache.http.client=DEBUG, file
-
-log4j.additivity.org.apache.http=DEBUG, false
-log4j.additivity.org.apache.http.wire=false
-log4j.additivity.org.apache.http.impl.conn=false
-log4j.additivity.org.apache.http.impl.client=false
-log4j.additivity.org.apache.http.client=false
-
-
-log4j.appender.file=org.apache.log4j.FileAppender
-log4j.appender.file.File=client.log
-log4j.appender.file.layout=org.apache.log4j.PatternLayout
-log4j.appender.file.layout=org.apache.log4j.PatternLayout
-log4j.appender.file.layout.ConversionPattern=[%d][%-5.5p ][%-25.25t][%-80.80c] %m%n
+<> a foaf:Person ;
+  foaf:mbox <mailto:m.esteban.gutierrez@gmail.com> ;
+  foaf:name "Miguel Esteban Gutierrez" ;
+  foaf:based_near <http://dbpedia.org/data/Madrid> ;
+  foaf:workplaceHomepage <http://www.centeropenmiddleware.com/> .

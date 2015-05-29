@@ -287,6 +287,12 @@ class ShellUtil {
 		}
 	}
 
+	private static void showField(ShellConsole console, String name, String value) {
+		if(value!=null) {
+			console.metadata("- %s : ",name).data("%s%n",value);
+		}
+	}
+
 	static ShellConsole console() {
 		String property = System.getProperty("shell.console","native");
 		ShellConsole console=new DefaultShellConsole();
@@ -326,18 +332,19 @@ class ShellUtil {
 	}
 
 	static void showResourceContent(ShellConsole console, Resource resource) {
-		console.
-			metadata("- Content:%n").data(resource.entity()).data("%n");
+		String entity = resource.entity();
+		if(entity!=null) {
+			console.metadata("- Content:%n").data(entity).data("%n");
+		}
 	}
 
 	static void showResourceMetadata(ShellConsole console, Resource resource) {
-		console.
-			metadata("- Content Type : ").data("%s%n",resource.contentType()).
-			metadata("- Entity Tag   : ").data("%s%n",resource.entityTag()).
-			metadata("- Last Modified: ").data("%s%n",resource.lastModified());
+		showField(console, "Content Type ", resource.contentType());
+		showField(console, "Entity Tag   ", resource.entityTag());
+		showField(console, "Last Modified", resource.lastModified());
 	}
 
-	public static void showLinks(ShellConsole console, Links links) {
+	static void showLinks(ShellConsole console, Links links) {
 		SortedSet<Link> all = links.all();
 		if(!all.isEmpty()) {
 			console.metadata("- Links: %n");
@@ -350,7 +357,7 @@ class ShellUtil {
 
 	private static AtomicInteger counter=new AtomicInteger();
 
-	public static String nextResourceFile() {
+	static String nextResourceFile() {
 		return String.format("resource.%04X.%X.dat",counter.incrementAndGet(),System.currentTimeMillis());
 	}
 

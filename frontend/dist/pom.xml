@@ -60,7 +60,7 @@
 
 	<properties>
 		<ldp4j.version>1.0.0-SNAPSHOT</ldp4j.version>
-		<tomcat.http.port>80</tomcat.http.port>
+		<frontend.http.port>80</frontend.http.port>
 	</properties>
 
 	<dependencyManagement>
@@ -136,7 +136,7 @@
 				<version>2.3-SNAPSHOT</version>
 				<configuration>
 					<!-- http port -->
-					<port>${tomcat.http.port}</port>
+					<port>${frontend.http.port}</port>
 					<!-- application path always starts with / -->
 					<path>/contacts</path>
 					<!-- optional path to a context file -->
