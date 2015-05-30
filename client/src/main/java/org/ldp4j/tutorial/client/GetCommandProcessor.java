@@ -26,31 +26,22 @@
  */
 package org.ldp4j.tutorial.client;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.util.EntityUtils;
 
 final class GetCommandProcessor extends AbstractLdpCommandProcessor {
 
 	private String location;
-	private String entity;
 
 	@Override
 	public boolean canExecute(CommandContext context) {
 		boolean result=false;
 		try {
 			this.location=requireTargetResource(context);
-			this.entity=requireEntity(context);
 			result=true;
 		} catch (CommandRequirementException e) {
 			console().error("ERROR: %s%n",e.getMessage());
@@ -58,52 +49,39 @@ final class GetCommandProcessor extends AbstractLdpCommandProcessor {
 		return result;
 	}
 
-	private String requireEntity(CommandContext context) {
-		String entity = context.entity();
-		if(entity==null) {
-			entity=ShellUtil.nextResourceFile();
-		}
-		return entity;
-	}
-
 	@Override
-	protected void processResponse(HttpResponse response) throws IOException {
-		Links links = getLinks(response);
+	protected void processResponse(CommandResponse response) throws IOException {
+		Links links = response.links();
 		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
 			console().error("Not a LDP resource%n");
 			ShellUtil.showLinks(console(),links);
 			return;
 		}
 
-		int statusCode = response.getStatusLine().getStatusCode();
-		Resource resource = refreshResource(this.location,response);
+		int statusCode = response.statusCode();
+		Resource resource = refreshResource(response);
 		if(statusCode==200) {
 			repository().updateResource(resource);
 			console().message("Resource retrieved:%n");
 			ShellUtil.showResourceMetadata(console(),resource);
 			ShellUtil.showLinks(console(),links);
 			ShellUtil.showResourceContent(console(),resource);
-			persist(this.entity,resource.entity());
+			persist(response.body().orNull());
 		} else {
 			processUnexpectedResponse(response, "Cannot retrieve resource");
 		}
 	}
 
-	private void persist(String entityResource, String entity) {
-		File file=new File(entityResource);
-		FileOutputStream fos=null;
+	private void persist(String contents) {
 		try {
-			fos=new FileOutputStream(file);
-			IOUtils.write(entity, fos);
+			manager().persist(this.location,contents);
 			console().
-				message("Content persisted to ").
-				metadata(entityResource).
+				message("Representation persisted to ").
+				metadata(manager().file(this.location).toString()).
 				data("%n");
 		} catch (IOException e) {
 			console().
-				error("ERROR: Could not persist entity (%s)", e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
+				error("ERROR: Could not persist representation (%s)", e.getMessage());
 		}
 
 	}
@@ -120,25 +98,13 @@ final class GetCommandProcessor extends AbstractLdpCommandProcessor {
 		return method;
 	}
 
-	private Resource refreshResource(String location, HttpResponse httpResponse) throws IOException {
-		Resource resource=repository().resolveResource(location);
-		if(resource==null) {
-			resource=repository().createResource(location);
-		}
-		HttpEntity entity = httpResponse.getEntity();
-		if(entity!=null) {
-			resource.
-				withContentType(entity.getContentType().getValue()).
-				withEntity(EntityUtils.toString(entity));
-		}
-		Header etag=httpResponse.getFirstHeader("ETag");
-		if(etag!=null) {
-			resource.withEntityTag(etag.getValue());
-		}
-		Header lastModified=httpResponse.getFirstHeader("Last-Modified");
-		if(lastModified!=null) {
-			resource.withLastModified(lastModified.getValue());
-		}
+	private Resource refreshResource(CommandResponse response) throws IOException {
+		Resource resource = getOrCreateResource(response.resource());
+		resource.
+			withContentType(response.contentType().orNull()).
+			withLastModified(response.lastModified().orNull()).
+			withEntityTag(response.entityTag().orNull()).
+			withEntity(response.body().orNull());
 		return resource;
 	}
 

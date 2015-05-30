@@ -27,14 +27,11 @@
 package org.ldp4j.tutorial.client;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -52,8 +49,8 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 	public boolean canExecute(CommandContext context) {
 		boolean result=false;
 		try {
-			this.entityTag=requireEntityTag(context);
 			this.location=requireTargetResource(context);
+			this.entityTag=requireEntityTag(context);
 			this.contentType=contentType(context);
 			this.content=requireEntity(context);
 			result=true;
@@ -64,15 +61,15 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 	}
 
 	@Override
-	protected void processResponse(HttpResponse response) throws IOException {
-		Links links = getLinks(response);
+	protected void processResponse(CommandResponse response) throws IOException {
+		Links links = response.links();
 		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
 			console().error("Not a LDP resource%n");
 			ShellUtil.showLinks(console(),links);
 			return;
 		}
 
-		int statusCode = response.getStatusLine().getStatusCode();
+		int statusCode = response.statusCode();
 		Resource resource = refreshResource(this.location, response);
 		if(statusCode==204) {
 			repository().updateResource(resource);
@@ -106,38 +103,43 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 	}
 
 	private String requireEntity(CommandContext context) {
-		String fileName=context.entity();
-		if(fileName==null) {
+		String entity=null;
+		String entityFileName=context.entity();
+		if(entityFileName==null) {
+			entity=loadPersistedEntity();
+		} else {
+			entity=loadSpecifiedEntity(entityFileName);
+		}
+		if(entity==null) {
 			throw new CommandRequirementException("No entity available");
 		}
+		return entity;
+	}
+
+	private String loadSpecifiedEntity(String fileName) {
 		File file=new File(fileName);
-		if(!file.canRead()) {
-			throw new CommandRequirementException("Cannot read entity");
-		}
-		FileInputStream fis = null;
 		try {
-			fis=new FileInputStream(file);
-			return IOUtils.toString(fis);
+			return FileUtils.readFileToString(file);
 		} catch (IOException e) {
 			throw new CommandRequirementException("Cannot load entity",e);
-		} finally {
-			IOUtils.closeQuietly(fis);
 		}
 	}
 
-	private Resource refreshResource(String location, HttpResponse httpResponse) throws IOException {
-		Resource resource=repository().resolveResource(location);
-		if(resource==null) {
-			resource=repository().createResource(location);
+	private String loadPersistedEntity() {
+		try {
+			return manager().get(this.location);
+		} catch (IOException e) {
+			throw new CommandRequirementException("Could not load persisted entity");
 		}
-		Header etag=httpResponse.getFirstHeader("ETag");
-		if(etag!=null) {
-			resource.withEntityTag(etag.getValue());
-		}
-		Header lastModified=httpResponse.getFirstHeader("Last-Modified");
-		if(lastModified!=null) {
-			resource.withLastModified(lastModified.getValue());
-		}
+	}
+
+	private Resource refreshResource(String location, CommandResponse response) throws IOException {
+		Resource resource = getOrCreateResource(response.resource());
+		resource.
+			withLastModified(response.lastModified().orNull()).
+			withEntityTag(response.entityTag().orNull()).
+			withContentType(null).
+			withEntity(null);
 		return resource;
 	}
 

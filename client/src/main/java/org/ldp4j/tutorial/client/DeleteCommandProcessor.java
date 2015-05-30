@@ -28,7 +28,6 @@ package org.ldp4j.tutorial.client;
 
 import java.io.IOException;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -52,8 +51,8 @@ final class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
 	}
 
 	@Override
-	protected void processResponse(HttpResponse response) throws IOException {
-		int statusCode = response.getStatusLine().getStatusCode();
+	protected void processResponse(CommandResponse response) throws IOException {
+		int statusCode = response.statusCode();
 		if(statusCode==204) {
 			repository().delete(this.location);
 			console().message("Resource deleted%n");

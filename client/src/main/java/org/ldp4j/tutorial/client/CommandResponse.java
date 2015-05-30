@@ -26,17 +26,26 @@
  */
 package org.ldp4j.tutorial.client;
 
+import com.google.common.base.Optional;
 
-interface CommandProcessor {
+interface CommandResponse {
 
-	boolean canExecute(CommandContext context);
+	String resource();
 
-	boolean execute(CommandContext options);
+	int statusCode();
 
-	void setConsole(ShellConsole console);
+	String statusMessage();
 
-	void setRepository(ResourceRepository repository);
+	Links links();
 
-	void setContentManager(ContentManager manager);
+	Optional<String> entityTag();
+
+	Optional<String> lastModified();
+
+	Optional<String> contentType();
+
+	Optional<String> body();
+
+	Optional<String> location();
 
 }

@@ -87,6 +87,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 
 	private ShellConsole console;
 	private ResourceRepository repository;
+	private ContentManager manager;
 
 	protected AbstractCommandProcessor() {
 	}
@@ -102,6 +103,9 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	protected final ResourceRepository repository() {
 		return this.repository;
 	}
+	protected final ContentManager manager() {
+		return this.manager;
+	}
 
 	@Override
 	public final void setConsole(ShellConsole console) {
@@ -111,6 +115,13 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	@Override
 	public final void setRepository(ResourceRepository repository) {
 		this.repository = repository;
+	}
+
+
+
+	@Override
+	public void setContentManager(ContentManager manager) {
+		this.manager = manager;
 	}
 
 	protected final String requireTargetResource(CommandContext context) {

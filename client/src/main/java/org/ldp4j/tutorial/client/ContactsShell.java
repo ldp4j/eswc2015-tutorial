@@ -26,6 +26,7 @@
  */
 package org.ldp4j.tutorial.client;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -124,8 +125,10 @@ public final class ContactsShell {
 	private final Options options;
 	private final ShellConsole console;
 	private final ResourceRepository repository;
+	private final ContentManager manager;
 
-	private ContactsShell(ShellConsole console, ResourceRepository repository) {
+	private ContactsShell(ShellConsole console, ResourceRepository repository, ContentManager manager) {
+		this.manager=manager;
 		this.console = console;
 		this.repository = repository;
 		this.options =
@@ -187,6 +190,7 @@ public final class ContactsShell {
 				CommandProcessor processor=ShellUtil.createProcessor(context.commandName());
 				processor.setConsole(this.console);
 				processor.setRepository(this.repository);
+				processor.setContentManager(this.manager);
 				if(processor.canExecute(context)) {
 					continueExecution=processor.execute(context);
 				}
@@ -197,12 +201,18 @@ public final class ContactsShell {
 	}
 
 	public static void main(String... args) {
-		ShellConsole console = ShellUtil.console();
-		String build=System.getProperty("shell.build","XXX");
-		console.title("ESWC 2015 - LDP4j Tutorial - Contacts Application Shell ").message("v%s%n",build);
-		ContactsShell shell=new ContactsShell(console,ResourceRepository.create());
-		shell.execute();
-		console.title("Bye!!!");
+		ContentManager manager=ContentManager.create(new File("tmp"));
+		try {
+			ShellConsole console = ShellUtil.console();
+			console.
+				title("ESWC 2015 - LDP4j Tutorial - Contacts Application Shell ").
+				message("v%s%n",System.getProperty("shell.build","XXX"));
+			ContactsShell shell=new ContactsShell(console,ResourceRepository.create(),manager);
+			shell.execute();
+			console.title("Bye!!!");
+		} finally {
+			manager.dispose();
+		}
 	}
 
 }

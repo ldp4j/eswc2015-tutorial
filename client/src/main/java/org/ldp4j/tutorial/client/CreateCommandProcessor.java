@@ -32,9 +32,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -62,25 +60,24 @@ final class CreateCommandProcessor extends AbstractLdpCommandProcessor {
 	}
 
 	@Override
-	protected void processResponse(HttpResponse response) throws IOException {
-		Links links = getLinks(response);
+	protected void processResponse(CommandResponse response) throws IOException {
+		Links links = response.links();
 		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
 			console().error("Not a LDP resource%n");
 			ShellUtil.showLinks(console(),links);
 			return;
 		}
 
-		int statusCode = response.getStatusLine().getStatusCode();
-		Resource resource = refreshResource(this.location, response);
+		int statusCode = response.statusCode();
+		Resource resource = refreshResource(response);
 		if(statusCode==201) {
-			Header locationHeader = response.getFirstHeader("Location");
-			if(locationHeader==null) {
+			if(!response.location().isPresent()) {
 				console().error("No new resource location found%n");
 				return;
 			}
 			repository().updateResource(resource);
 			console().message("Resource created:%n");
-			console().metadata("- New resource available at ").data("%s%n",locationHeader.getValue());
+			console().metadata("- New resource available at ").data("%s%n",response.location().get());
 			console().message("Target resource status:%n");
 			ShellUtil.showResourceMetadata(console(), resource);
 			ShellUtil.showLinks(console(),links);
@@ -127,20 +124,11 @@ final class CreateCommandProcessor extends AbstractLdpCommandProcessor {
 		}
 	}
 
-	private Resource refreshResource(String location, HttpResponse httpResponse) throws IOException {
-		Resource resource=repository().resolveResource(location);
-		if(resource==null) {
-			resource=repository().createResource(location);
-		}
-		Header etag=httpResponse.getFirstHeader("ETag");
-		if(etag!=null) {
-			resource.withEntityTag(etag.getValue());
-		}
-		Header lastModified=httpResponse.getFirstHeader("Last-Modified");
-		if(lastModified!=null) {
-			resource.withLastModified(lastModified.getValue());
-		}
+	private Resource refreshResource(CommandResponse response) throws IOException {
+		Resource resource = getOrCreateResource(response.resource());
 		resource.
+			withLastModified(response.lastModified().orNull()).
+			withEntityTag(response.entityTag().orNull()).
 			withContentType(null).
 			withEntity(null);
 		return resource;
