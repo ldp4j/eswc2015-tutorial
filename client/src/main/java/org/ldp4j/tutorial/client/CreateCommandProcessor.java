@@ -61,16 +61,16 @@ final class CreateCommandProcessor extends AbstractLdpCommandProcessor {
 
 	@Override
 	protected void processResponse(CommandResponse response) throws IOException {
-		Links links = response.links();
-		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
-			console().error("Not a LDP resource%n");
-			ShellUtil.showLinks(console(),links);
-			return;
-		}
-
 		int statusCode = response.statusCode();
 		Resource resource = refreshResource(response);
 		if(statusCode==201) {
+			Links links = response.links();
+			if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
+				console().error("Not a LDP resource%n");
+				ShellUtil.showLinks(console(),links);
+				return;
+			}
+
 			if(!response.location().isPresent()) {
 				console().error("No new resource location found%n");
 				return;

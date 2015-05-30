@@ -51,16 +51,16 @@ final class RetrieveCommandProcessor extends AbstractLdpCommandProcessor {
 
 	@Override
 	protected void processResponse(CommandResponse response) throws IOException {
-		Links links = response.links();
-		if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
-			console().error("Not a LDP resource%n");
-			ShellUtil.showLinks(console(),links);
-			return;
-		}
 
 		int statusCode = response.statusCode();
 		Resource resource = refreshResource(response);
 		if(statusCode==200) {
+			Links links = response.links();
+			if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
+				console().error("Not a LDP resource%n");
+				ShellUtil.showLinks(console(),links);
+				return;
+			}
 			repository().updateResource(resource);
 			console().message("Resource retrieved:%n");
 			ShellUtil.showResourceMetadata(console(),resource);
