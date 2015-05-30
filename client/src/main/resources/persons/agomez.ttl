@@ -27,8 +27,8 @@
 
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<> a foaf:Person ;
-  foaf:mbox <mailto:m.esteban.gutierrez@gmail.com> ;
-  foaf:name "Miguel Esteban Gutierrez" ;
-  foaf:based_near <http://dbpedia.org/data/Madrid> ;
-  foaf:workplaceHomepage <http://www.centeropenmiddleware.com/> .
+<> a foaf:Person;
+  foaf:name "Asuncion Gomez Perez";
+  foaf:mbox <mailto:asun@fi.upm.es>;
+  foaf:based_near <http://es.dbpedia.org/resource/Madrid>;
+  foaf:workplaceHomepage <http://www.oeg-upm.net/> .
