@@ -77,8 +77,7 @@ final class RetrieveCommandProcessor extends AbstractLdpCommandProcessor {
 			manager().persist(this.location,contents);
 			console().
 				message("Representation persisted to ").
-				metadata(manager().file(this.location).toString()).
-				data("%n");
+				metadata("%s%n",manager().file(this.location).getAbsolutePath());
 		} catch (IOException e) {
 			console().
 				error("ERROR: Could not persist representation (%s)", e.getMessage());

@@ -37,6 +37,6 @@ interface CommandProcessor {
 
 	void setRepository(ResourceRepository repository);
 
-	void setContentManager(ContentManager manager);
+	void setContentManager(CachedRepresentationManager manager);
 
 }

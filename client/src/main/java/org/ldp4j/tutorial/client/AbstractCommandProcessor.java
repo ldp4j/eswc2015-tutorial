@@ -87,7 +87,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 
 	private ShellConsole console;
 	private ResourceRepository repository;
-	private ContentManager manager;
+	private CachedRepresentationManager manager;
 
 	protected AbstractCommandProcessor() {
 	}
@@ -103,7 +103,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	protected final ResourceRepository repository() {
 		return this.repository;
 	}
-	protected final ContentManager manager() {
+	protected final CachedRepresentationManager manager() {
 		return this.manager;
 	}
 
@@ -120,7 +120,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 
 
 	@Override
-	public void setContentManager(ContentManager manager) {
+	public void setContentManager(CachedRepresentationManager manager) {
 		this.manager = manager;
 	}
 

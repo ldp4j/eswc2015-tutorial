@@ -82,7 +82,7 @@ public abstract class AbstractLdpCommandProcessor extends AbstractCommandProcess
 			console().metadata(" - %s",t.getClass().getCanonicalName());
 			String message=t.getMessage();
 			if(message!=null) {
-				console().data(": %s%n",message);
+				console().data(": %s",message);
 			}
 			console().data("%n",message);
 		}
@@ -187,7 +187,5 @@ public abstract class AbstractLdpCommandProcessor extends AbstractCommandProcess
 		}
 		return resource;
 	}
-
-
 
 }

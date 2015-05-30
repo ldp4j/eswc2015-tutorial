@@ -125,9 +125,9 @@ public final class ContactsShell {
 	private final Options options;
 	private final ShellConsole console;
 	private final ResourceRepository repository;
-	private final ContentManager manager;
+	private final CachedRepresentationManager manager;
 
-	private ContactsShell(ShellConsole console, ResourceRepository repository, ContentManager manager) {
+	private ContactsShell(ShellConsole console, ResourceRepository repository, CachedRepresentationManager manager) {
 		this.manager=manager;
 		this.console = console;
 		this.repository = repository;
@@ -201,7 +201,8 @@ public final class ContactsShell {
 	}
 
 	public static void main(String... args) {
-		ContentManager manager=ContentManager.create(new File(""));
+		File cacheDirectory = new File(".cache");
+		CachedRepresentationManager manager=CachedRepresentationManager.create(cacheDirectory);
 		try {
 			ShellConsole console = ShellUtil.console();
 			console.

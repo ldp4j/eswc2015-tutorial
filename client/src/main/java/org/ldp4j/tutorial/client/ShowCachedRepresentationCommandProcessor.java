@@ -26,20 +26,7 @@
  */
 package org.ldp4j.tutorial.client;
 
-final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
-
-	@Override
-	public boolean canExecute(CommandContext context) {
-		boolean result=false;
-		if(!context.hasTarget()) {
-			console().error("ERROR: No target resource specified%n");
-		} else if(context.hasOptions()) {
-			console().error("ERROR: No command options allowed%n");
-		} else {
-			result=true;
-		}
-		return result;
-	}
+final class ShowCachedRepresentationCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
 	public boolean execute(CommandContext options) {
@@ -47,12 +34,24 @@ final class ShowResourceCommandProcessor extends AbstractCommandProcessor {
 		if(resource==null) {
 			console().error("ERROR: Unknown resource '").metadata(options.target()).error("'%n");
 		} else {
-			console().message("Cached resource [").message(options.target()).message("]%n");
-			ShellConsole console1 = console();
-			ShellUtil.showResourceMetadata(console1, resource);
-			ShellUtil.showResourceContent(console1, resource);
+			console().message("Cached representation [").metadata(options.target()).message("]%n");
+			ShellUtil.showResourceMetadata(console(), resource);
+			ShellUtil.showResourceContent(console(), resource);
 		}
 		return true;
+	}
+
+	@Override
+	public boolean canExecute(CommandContext context) {
+		boolean result=false;
+		if(!context.hasTarget()) {
+			console().error("ERROR: No target resource specified%n");
+		} else if(context.hasOptions()) {
+			console().error("ERROR: Command options not allowed%n");
+		} else {
+			result=true;
+		}
+		return result;
 	}
 
 }

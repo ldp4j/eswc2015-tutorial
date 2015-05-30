@@ -29,7 +29,7 @@ package org.ldp4j.tutorial.client;
 import java.util.List;
 
 
-final class ListResourcesCommandProcessor extends AbstractCommandProcessor {
+final class ListCachedRepresentationsCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
 	public boolean canExecute(CommandContext context) {
@@ -38,12 +38,12 @@ final class ListResourcesCommandProcessor extends AbstractCommandProcessor {
 
 	@Override
 	public boolean execute(CommandContext options) {
-		console().message("Resources:%n");
+		console().message("Cached representations:%n");
 		List<String> resources=repository().list();
 		for(String resource:resources) {
 			console().data("- %s%n",resource);
 		}
-		console().metadata("-- %d resource(s) retrieved%n",resources.size());
+		console().metadata("-- %d resource(s) cached%n",resources.size());
 		return true;
 	}
 

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
-final class ContentManager {
+final class CachedRepresentationManager {
 
 	private final class ContentEntry {
 
@@ -64,14 +64,30 @@ final class ContentManager {
 
 	}
 
-	private static Logger LOGGER=LoggerFactory.getLogger(ContentManager.class);
+	private static Logger LOGGER=LoggerFactory.getLogger(CachedRepresentationManager.class);
 
 	private final Map<String,ContentEntry> loadedResources;
-	private final File path;
+	private File cacheDirectory;
 
-	private ContentManager(File path) {
-		this.path=path;
+	private boolean created;
+
+	private CachedRepresentationManager(File cacheDirectory) {
+		this.cacheDirectory=cacheDirectory;
 		this.loadedResources=Maps.newLinkedHashMap();
+	}
+
+	private void init() {
+		if(!this.cacheDirectory.exists()) {
+			this.cacheDirectory.mkdirs();
+			this.created=true;
+			LOGGER.debug("Created cache directory {}",this.cacheDirectory.getAbsolutePath());
+		} else if(!this.cacheDirectory.isDirectory()) {
+			LOGGER.debug("Path {} cannot be used as cache directory. Resorting to default temp directory {}",this.cacheDirectory.getAbsolutePath(),FileUtils.getTempDirectoryPath());
+			this.cacheDirectory=FileUtils.getTempDirectory();
+			this.created=false;
+		} else {
+			this.created=false;
+		}
 	}
 
 	private ContentEntry getOrCreateEntry(String resource) {
@@ -108,7 +124,7 @@ final class ContentManager {
 			builder.append("#").append(uri.getRawFragment());
 		}
 		builder.append(".dat");
-		File file = new File(this.path,builder.toString());
+		File file = new File(this.cacheDirectory,builder.toString());
 		return file;
 	}
 
@@ -137,21 +153,32 @@ final class ContentManager {
 	}
 
 	void dispose() {
-		LOGGER.debug("Disposing resources persisted at {}...",this.path);
+		LOGGER.debug("Disposing resources persisted at {}...",this.cacheDirectory);
 		for(ContentEntry entry:this.loadedResources.values()) {
 			if(entry.file().exists()) {
 				LOGGER.debug("- Deleting resource {} ({})...",entry.resource(),entry.file());
 				if(!entry.file().delete()) {
 					entry.file().deleteOnExit();
-					LOGGER.debug("  - Could not delete {}. Scheduling for deletion on exit.",entry.resource());
+					LOGGER.debug("  + Could not delete {}. Scheduling for deletion on exit.",entry.resource());
 				}
 			}
 		}
-		LOGGER.debug("Resources persisted at {} deleted.",this.path);
+		if(this.created) {
+			LOGGER.debug("- Deleting cache directory...");
+			try {
+				FileUtils.deleteDirectory(this.cacheDirectory);
+				LOGGER.debug("  + Cache directory deleted.");
+			} catch (IOException e) {
+				LOGGER.debug("  + Could not delete cache directory: {}",e.getMessage());
+			}
+		}
+		LOGGER.debug("Resources persisted at {} deleted.",this.cacheDirectory);
 	}
 
-	static ContentManager create(File path) {
-		return new ContentManager(path);
+	static CachedRepresentationManager create(File cacheDirectory) {
+		CachedRepresentationManager manager = new CachedRepresentationManager(cacheDirectory);
+		manager.init();
+		return manager;
 	}
 
 }
