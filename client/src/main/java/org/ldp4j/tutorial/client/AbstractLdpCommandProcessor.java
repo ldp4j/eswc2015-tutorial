@@ -140,21 +140,26 @@ public abstract class AbstractLdpCommandProcessor extends AbstractCommandProcess
 
 	protected final void processUnexpectedResponse(CommandResponse response, String message, Object... args) {
 		console().error(message+"%n",args);
+		if(response.body().isPresent()) {
+			console().metadata("- Server response: ").data("%s%n",response.body().get());
+		}
 		int statusCode = response.statusCode();
 		if(statusCode==404) {
 			console().metadata("- Resource not found%n");
 		} else if(statusCode==405) {
 			console().metadata("- Operation not allowed%n");
 		} else if(statusCode==409) {
-			try {
-				URI constraintReport = response.links().firstValue("http://www.w3.org/ns/ldp#constrainedBy");
-				console().metadata("- Conflict: ").data(constraintReport.toString()).metadata("]:%n");
-				String report = loadConstraintReport(constraintReport);
-				console().metadata("- Conflict [%n").data(constraintReport.toString()).metadata("]:%n");
-				console().data(report).data("%n");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			URI constraintReport=response.links().firstValue("http://www.w3.org/ns/ldp#constrainedBy");
+			if(constraintReport==null) {
+				console().metadata("- Conflict. No constraints specified.%n");
+			} else {
+				try {
+					String report=loadConstraintReport(constraintReport);
+					console().metadata("- Constraint report [").data(constraintReport.toString()).metadata("]:%n");
+					console().data(report).data("%n");
+				} catch (IOException e) {
+					console().metadata("- Conflict. See constraints defined in ").data("%s%n",constraintReport);
+				}
 			}
 		} else if(statusCode==410) {
 			console().metadata("- Resource has been already deleted%n");

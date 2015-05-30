@@ -28,28 +28,31 @@ package org.ldp4j.tutorial.client;
 
 enum Command {
 
-	EXIT("exit",ExitCommandProcessor.class),
-	CLEAR("clear",ClearCommandProcessor.class),
-	LIST_RESOURCES("list-resources",ListResourcesCommandProcessor.class),
-	SHOW_RESOURCE("show-resource",ShowResourceCommandProcessor.class),
-	GET("get-resource",GetCommandProcessor.class),
-	DELETE("delete-resource",DeleteCommandProcessor.class),
-	MODIFY("modify-resource",ModifyCommandProcessor.class),
-	CREATE("create-resource",CreateCommandProcessor.class),
+	EXIT("exit","Terminate the client shell",ExitCommandProcessor.class),
+	CLEAR("clear","Clear the console",ClearCommandProcessor.class),
+	HELP("help","Show the client shell help",HelpCommandProcessor.class),
+	LIST_REPRESENTATIONS("list-cached-representations","Show the list of cached representations",ListResourcesCommandProcessor.class),
+	SHOW_REPRESENTATION("show-cached-representation","Show the cached representation of a given resource",ShowResourceCommandProcessor.class),
+	RETRIEVE("retrieve-resource","Retrieve a LDP resource",RetrieveCommandProcessor.class),
+	DELETE("delete-resource","Delete a LDP resource",DeleteCommandProcessor.class),
+	MODIFY("modify-resource","Modify a LDP resource",ModifyCommandProcessor.class),
+	CREATE("create-resource","Create a LDP resource",CreateCommandProcessor.class),
 	;
 
-	private String name;
+	private String commandName;
+	private String commandDescription;
 	private Class<? extends CommandProcessor> clazz;
 
-	Command(String name,Class<? extends CommandProcessor> clazz) {
-		this.name = name;
+	Command(String name, String description, Class<? extends CommandProcessor> clazz) {
+		this.commandName = name;
+		this.commandDescription = description;
 		this.clazz = clazz;
 	}
 
 	static Command fromString(String name) {
 		Command targetCmd=null;
 		for(Command cmd:values()) {
-			if(cmd.name.equalsIgnoreCase(name)) {
+			if(cmd.commandName.equalsIgnoreCase(name)) {
 				targetCmd=cmd;
 				break;
 			}
@@ -61,8 +64,16 @@ enum Command {
 		try {
 			return clazz.newInstance();
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not prepare processor for command '"+this.name+"' ("+this.clazz.getCanonicalName()+")",e);
+			throw new IllegalStateException("Could not prepare processor for command '"+this.commandName+"' ("+this.clazz.getCanonicalName()+")",e);
 		}
+	}
+
+	public String commandDescription() {
+		return this.commandDescription;
+	}
+
+	public String commandName() {
+		return this.commandName;
 	}
 
 }

@@ -201,7 +201,7 @@ public final class ContactsShell {
 	}
 
 	public static void main(String... args) {
-		ContentManager manager=ContentManager.create(new File("tmp"));
+		ContentManager manager=ContentManager.create(new File(""));
 		try {
 			ShellConsole console = ShellUtil.console();
 			console.

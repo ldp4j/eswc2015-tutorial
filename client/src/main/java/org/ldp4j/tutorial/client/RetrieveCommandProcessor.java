@@ -33,7 +33,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 
-final class GetCommandProcessor extends AbstractLdpCommandProcessor {
+final class RetrieveCommandProcessor extends AbstractLdpCommandProcessor {
 
 	private String location;
 
