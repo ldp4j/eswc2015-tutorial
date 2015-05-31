@@ -25,32 +25,40 @@
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 ====
 
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/
+* Checking the application status:
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/
 
-create-resource -e src/main/resources/persons/mesteban.ttl http://localhost/contacts/ldp4j/api/persons/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/
+* Creating a person...:
+  create-resource -e src/main/resources/persons/mesteban.ttl http://localhost/contacts/ldp4j/api/persons/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/
 
-create-resource -e src/main/resources/contacts/corky.ttl http://localhost/contacts/ldp4j/api/persons/1/contacts/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+* ... adding a contact...:
+  create-resource -e src/main/resources/contacts/corky.ttl http://localhost/contacts/ldp4j/api/persons/1/contacts/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
 
-modify-resource http://localhost/contacts/ldp4j/api/persons/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+* Updating the person:
+  modify-resource http://localhost/contacts/ldp4j/api/persons/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+  
+* ...and updating the contact...:
+  modify-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
 
-modify-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
+* Breaking the rules...:
+  modify-resource http://localhost/contacts/ldp4j/api/persons/1/
 
-modify-resource http://localhost/contacts/ldp4j/api/persons/1/
-
-delete-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
-
-delete-resource http://localhost/contacts/ldp4j/api/persons/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
-retrieve-resource http://localhost/contacts/ldp4j/api/persons/
+* Deleting the contact...:
+  delete-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+  
+* Deleting the person...:
+  delete-resource http://localhost/contacts/ldp4j/api/persons/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/1/contacts/
+  retrieve-resource http://localhost/contacts/ldp4j/api/persons/
