@@ -136,7 +136,7 @@ public final class ContactsShell {
 				addOption("et","entity-tag",    true, "use entity tag").
 				addOption("lm","last-modified", true, "use last modified date").
 				addOption("ct","content-type",  true, "use content type").
-				addOption("e","entity", true, "use entity");
+				addOption("e", "entity",        true, "use entity");
 	}
 
 	private CommandContext createCommandContext(String rawCommandLine) throws ParseException {

@@ -78,15 +78,16 @@ final class CachedRepresentationManager {
 
 	private void init() {
 		if(!this.cacheDirectory.exists()) {
-			this.cacheDirectory.mkdirs();
-			this.created=true;
-			LOGGER.debug("Created cache directory {}",this.cacheDirectory.getAbsolutePath());
-		} else if(!this.cacheDirectory.isDirectory()) {
+			this.created=this.cacheDirectory.mkdirs();
+		}
+
+		if(!this.created && !this.cacheDirectory.isDirectory()) {
 			LOGGER.debug("Path {} cannot be used as cache directory. Resorting to default temp directory {}",this.cacheDirectory.getAbsolutePath(),FileUtils.getTempDirectoryPath());
 			this.cacheDirectory=FileUtils.getTempDirectory();
-			this.created=false;
-		} else {
-			this.created=false;
+		}
+
+		if(this.created){
+			LOGGER.debug("Created cache directory {}",this.cacheDirectory.getAbsolutePath());
 		}
 	}
 
@@ -153,10 +154,10 @@ final class CachedRepresentationManager {
 	}
 
 	void dispose() {
-		LOGGER.debug("Disposing resources persisted at {}...",this.cacheDirectory);
+		LOGGER.debug("Disposing representations cached at {}...",this.cacheDirectory);
 		for(ContentEntry entry:this.loadedResources.values()) {
 			if(entry.file().exists()) {
-				LOGGER.debug("- Deleting resource {} ({})...",entry.resource(),entry.file());
+				LOGGER.debug("- Deleting representation for resource {} ({})...",entry.resource(),entry.file());
 				if(!entry.file().delete()) {
 					entry.file().deleteOnExit();
 					LOGGER.debug("  + Could not delete {}. Scheduling for deletion on exit.",entry.resource());
@@ -172,7 +173,7 @@ final class CachedRepresentationManager {
 				LOGGER.debug("  + Could not delete cache directory: {}",e.getMessage());
 			}
 		}
-		LOGGER.debug("Resources persisted at {} deleted.",this.cacheDirectory);
+		LOGGER.debug("Representations cached at {} deleted.",this.cacheDirectory);
 	}
 
 	static CachedRepresentationManager create(File cacheDirectory) {
