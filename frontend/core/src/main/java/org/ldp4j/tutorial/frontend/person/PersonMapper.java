@@ -36,7 +36,6 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.tutorial.application.api.Person;
 import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Mapper;
@@ -139,7 +138,7 @@ final class PersonMapper implements PersonVocabulary {
 
 		DataSet dataSet = DataSetFactory.createDataSet(personName);
 
-		addObjectPropertyValue(dataSet,personName,RDF.TYPE.qualifiedEntityName(),PERSON);
+		addObjectPropertyValue(dataSet,personName,TYPE,PERSON);
 		addObjectPropertyValue(dataSet,personName,EMAIL,person.getEmail());
 		addDatatypePropertyValue(dataSet,personName,NAME,person.getName());
 		addObjectPropertyValue(dataSet,personName,LOCATION,person.getLocation());

@@ -28,11 +28,13 @@ package org.ldp4j.tutorial.frontend.person;
 
 interface PersonVocabulary {
 
-	static final String PERSON = "http://xmlns.com/foaf/0.1/Person";
+	static final String TYPE               = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+
+	static final String PERSON             = "http://xmlns.com/foaf/0.1/Person";
 
 	static final String WORKPLACE_HOMEPAGE = "http://xmlns.com/foaf/0.1/workplaceHomepage";
-	static final String LOCATION = "http://xmlns.com/foaf/0.1/based_near";
-	static final String NAME = "http://xmlns.com/foaf/0.1/name";
-	static final String EMAIL = "http://xmlns.com/foaf/0.1/mbox";
+	static final String LOCATION           = "http://xmlns.com/foaf/0.1/based_near";
+	static final String NAME               = "http://xmlns.com/foaf/0.1/name";
+	static final String EMAIL              = "http://xmlns.com/foaf/0.1/mbox";
 
 }

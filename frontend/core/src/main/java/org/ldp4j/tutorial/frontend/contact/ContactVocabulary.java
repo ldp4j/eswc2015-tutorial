@@ -26,11 +26,10 @@
  */
 package org.ldp4j.tutorial.frontend.contact;
 
-import org.ldp4j.application.domain.RDF;
 
 interface ContactVocabulary {
 
-	static final String TYPE       = RDF.TYPE.qualifiedEntityName();
+	static final String TYPE       = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 
 	static final String INDIVIDUAL = "http://www.w3.org/2006/vcard/ns#Individual";
 	static final String HOME       = "http://www.w3.org/2006/vcard/ns#Home";

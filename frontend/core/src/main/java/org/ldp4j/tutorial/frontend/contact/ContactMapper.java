@@ -35,7 +35,6 @@ import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.frontend.util.IdentityUtil;
 import org.ldp4j.tutorial.frontend.util.Mapper;
@@ -139,7 +138,7 @@ final class ContactMapper implements ContactVocabulary {
 
 		helper.
 			managedIndividual(contactName, ContactHandler.ID).
-				property(RDF.TYPE).
+				property(TYPE).
 					withIndividual(INDIVIDUAL).
 				property(FULL_NAME).
 					withLiteral(contact.getFullName()).
@@ -152,7 +151,7 @@ final class ContactMapper implements ContactVocabulary {
 
 		helper.
 			localIndividual(telephoneName).
-				property(RDF.TYPE).
+				property(TYPE).
 					withIndividual(HOME).
 					withIndividual(VOICE).
 				property(NUMBER).
