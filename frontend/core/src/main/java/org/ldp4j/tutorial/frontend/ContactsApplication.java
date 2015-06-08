@@ -29,7 +29,6 @@ package org.ldp4j.tutorial.frontend;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.Application;
-import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
@@ -42,7 +41,7 @@ import org.ldp4j.tutorial.frontend.person.PersonHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class ContactsApplication extends Application<Configuration> {
+public final class ContactsApplication extends Application<ContactsConfiguration> {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ContactsApplication.class);
 
@@ -60,7 +59,7 @@ public final class ContactsApplication extends Application<Configuration> {
 	}
 
 	@Override
-	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
+	public void setup(Environment environment, Bootstrap<ContactsConfiguration> bootstrap) {
 		LOGGER.info("Starting Contacts Application configuration...");
 
 		ContactsService service = ContactsService.getInstance();

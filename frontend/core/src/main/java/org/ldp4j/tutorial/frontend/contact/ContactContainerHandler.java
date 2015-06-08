@@ -49,7 +49,7 @@ import org.ldp4j.tutorial.frontend.util.Typed;
 @DirectContainer(
 	id = ContactContainerHandler.ID,
 	memberHandler = ContactHandler.class,
-	membershipPredicate="http://www.ldp4j.org/ns/application#hasContact"
+	membershipPredicate="http://www.ldp4j.org/ns/contacts#hasContact"
 )
 public class ContactContainerHandler extends Serviceable implements ContainerHandler {
 
