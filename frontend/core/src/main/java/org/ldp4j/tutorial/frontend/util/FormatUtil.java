@@ -37,7 +37,7 @@ import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.tutorial.application.api.Contact;
 import org.ldp4j.tutorial.application.api.Person;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 public final class FormatUtil {
 
@@ -67,7 +67,7 @@ public final class FormatUtil {
 
 	public static String toString(Contact contact) {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(Contact.class).
 					omitNullValues().
 						add("fullName",contact.getFullName()).
@@ -79,7 +79,7 @@ public final class FormatUtil {
 
 	public static String toString(Person contact) {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(Person.class).
 					omitNullValues().
 						add("name",contact.getName()).

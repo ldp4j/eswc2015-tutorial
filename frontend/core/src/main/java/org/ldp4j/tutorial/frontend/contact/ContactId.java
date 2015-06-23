@@ -26,7 +26,7 @@
  */
 package org.ldp4j.tutorial.frontend.contact;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 public final class ContactId {
 
@@ -49,7 +49,7 @@ public final class ContactId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("person",this.person).
 					add("email",this.email).
