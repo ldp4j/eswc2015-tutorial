@@ -30,9 +30,9 @@ import java.net.URI;
 import java.util.Set;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.tutorial.application.api.Contact;
@@ -132,7 +132,7 @@ final class ContactMapper implements ContactVocabulary {
 		Name<String> contactName=IdentityUtil.name(contact);
 		Name<?> telephoneName=IdentityUtil.name(contact,"telephone");
 
-		DataSet dataSet=DataSetFactory.createDataSet(contactName);
+		DataSet dataSet=DataSets.createDataSet(contactName);
 
 		DataSetHelper helper=DataSetUtils.newHelper(dataSet);
 

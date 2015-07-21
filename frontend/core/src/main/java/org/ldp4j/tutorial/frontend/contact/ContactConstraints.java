@@ -29,7 +29,7 @@ package org.ldp4j.tutorial.frontend.contact;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
@@ -62,7 +62,7 @@ final class ContactConstraints implements ContactVocabulary {
 			name=IdentityUtil.name(contact);
 		}
 
-		DataSet tmp=DataSetFactory.createDataSet(name);
+		DataSet tmp=DataSets.createDataSet(name);
 		ExternalIndividual individualIndividual = tmp.individual(URI.create(INDIVIDUAL),ExternalIndividual.class);
 		ExternalIndividual voiceIndividual      = tmp.individual(URI.create(VOICE),ExternalIndividual.class);
 		ExternalIndividual homeIndividual       = tmp.individual(URI.create(HOME),ExternalIndividual.class);

@@ -29,8 +29,8 @@ package org.ldp4j.tutorial.frontend.person;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividual;
@@ -136,7 +136,7 @@ final class PersonMapper implements PersonVocabulary {
 	static DataSet toDataSet(Person person) {
 		Name<String> personName=IdentityUtil.name(person);
 
-		DataSet dataSet = DataSetFactory.createDataSet(personName);
+		DataSet dataSet = DataSets.createDataSet(personName);
 
 		addObjectPropertyValue(dataSet,personName,TYPE,PERSON);
 		addObjectPropertyValue(dataSet,personName,EMAIL,person.getEmail());

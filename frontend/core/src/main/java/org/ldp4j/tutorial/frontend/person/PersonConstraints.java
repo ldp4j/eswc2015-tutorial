@@ -29,7 +29,7 @@ package org.ldp4j.tutorial.frontend.person;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
@@ -64,7 +64,7 @@ final class PersonConstraints implements PersonVocabulary {
 			name=IdentityUtil.name(person);
 		}
 
-		DataSet tmp=DataSetFactory.createDataSet(name);
+		DataSet tmp=DataSets.createDataSet(name);
 
 		PropertyConstraint emailConstraint = null;
 		if(person!=null) {

@@ -27,7 +27,7 @@
 package org.ldp4j.tutorial.frontend.contact;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -73,7 +73,7 @@ public class ContactContainerHandler extends Serviceable implements ContainerHan
 			throws UnknownResourceException, ApplicationRuntimeException {
 		// For the time there is nothing to return
 		return
-			DataSetFactory.
+			DataSets.
 				createDataSet(resource.name());
 	}
 
