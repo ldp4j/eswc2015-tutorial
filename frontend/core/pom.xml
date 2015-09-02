@@ -57,10 +57,6 @@
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<properties>
-		<ldp4j.version>1.0.0-SNAPSHOT</ldp4j.version>
-	</properties>
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
