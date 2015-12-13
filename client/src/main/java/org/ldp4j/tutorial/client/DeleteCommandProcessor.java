@@ -53,9 +53,14 @@ final class DeleteCommandProcessor extends AbstractLdpCommandProcessor {
 	@Override
 	protected void processResponse(CommandResponse response) throws IOException {
 		int statusCode = response.statusCode();
-		if(statusCode==204) {
+		Resource resource = refreshResource(response);
+		if(statusCode==200 || statusCode==204) {
 			repository().delete(this.location);
 			console().message("Resource deleted%n");
+			if(response.body().isPresent()) {
+				console().message("Side effects:%n");
+				ShellUtil.showResourceContent(console(),resource);
+			}
 		} else {
 			processUnexpectedResponse(response, "Could not delete resource");
 		}

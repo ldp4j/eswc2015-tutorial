@@ -334,12 +334,12 @@ class ShellUtil {
 	static void showResourceContent(ShellConsole console, Resource resource) {
 		String entity = resource.entity();
 		if(entity!=null) {
-			console.metadata("- Content:%n").data(entity).data("%n");
+			showField(console, "Content Type", resource.contentType());
+			console.metadata("- Content      :%n").data(entity).data("%n");
 		}
 	}
 
 	static void showResourceMetadata(ShellConsole console, Resource resource) {
-		showField(console, "Content Type ", resource.contentType());
 		showField(console, "Entity Tag   ", resource.entityTag());
 		showField(console, "Last Modified", resource.lastModified());
 	}

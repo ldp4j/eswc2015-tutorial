@@ -63,8 +63,8 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 	@Override
 	protected void processResponse(CommandResponse response) throws IOException {
 		int statusCode = response.statusCode();
-		Resource resource = refreshResource(this.location, response);
-		if(statusCode==204) {
+		Resource resource = refreshResource(response);
+		if(statusCode==200 || statusCode==204) {
 			Links links = response.links();
 			if(!links.hasLink("type",URI.create("http://www.w3.org/ns/ldp#Resource"))) {
 				console().error("Not a LDP resource%n");
@@ -76,7 +76,10 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 			console().message("Resource modified:%n");
 			ShellUtil.showResourceMetadata(console(), resource);
 			ShellUtil.showLinks(console(),links);
-			ShellUtil.showResourceContent(console(), resource);
+			if(response.body().isPresent()) {
+				console().message("Side effects:%n");
+				ShellUtil.showResourceContent(console(),resource);
+			}
 		} else {
 			processUnexpectedResponse(response, "Could not modify resource");
 		}
@@ -131,16 +134,6 @@ final class ModifyCommandProcessor extends AbstractLdpCommandProcessor {
 		} catch (IOException e) {
 			throw new CommandRequirementException("Could not load persisted entity");
 		}
-	}
-
-	private Resource refreshResource(String location, CommandResponse response) throws IOException {
-		Resource resource = getOrCreateResource(response.resource());
-		resource.
-			withLastModified(response.lastModified().orNull()).
-			withEntityTag(response.entityTag().orNull()).
-			withContentType(null).
-			withEntity(null);
-		return resource;
 	}
 
 	private String contentType(CommandContext options) {

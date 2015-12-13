@@ -138,6 +138,16 @@ public abstract class AbstractLdpCommandProcessor extends AbstractCommandProcess
 		return links;
 	}
 
+	protected final Resource refreshResource(CommandResponse response) throws IOException {
+		Resource resource = getOrCreateResource(response.resource());
+		resource.
+			withLastModified(response.lastModified().orNull()).
+			withEntityTag(response.entityTag().orNull()).
+			withContentType(response.contentType().orNull()).
+			withEntity(response.body().orNull());
+		return resource;
+	}
+
 	protected final void processUnexpectedResponse(CommandResponse response, String message, Object... args) {
 		console().error(message+"%n",args);
 		if(response.body().isPresent()) {

@@ -81,6 +81,10 @@ final class CreateCommandProcessor extends AbstractLdpCommandProcessor {
 			console().message("Target resource status:%n");
 			ShellUtil.showResourceMetadata(console(), resource);
 			ShellUtil.showLinks(console(),links);
+			if(response.body().isPresent()) {
+				console().message("Side effects:%n");
+				ShellUtil.showResourceContent(console(),resource);
+			}
 		} else {
 			processUnexpectedResponse(response, "Could not create resource");
 		}
@@ -122,16 +126,6 @@ final class CreateCommandProcessor extends AbstractLdpCommandProcessor {
 		} finally {
 			IOUtils.closeQuietly(fis);
 		}
-	}
-
-	private Resource refreshResource(CommandResponse response) throws IOException {
-		Resource resource = getOrCreateResource(response.resource());
-		resource.
-			withLastModified(response.lastModified().orNull()).
-			withEntityTag(response.entityTag().orNull()).
-			withContentType(null).
-			withEntity(null);
-		return resource;
 	}
 
 	private String contentType(CommandContext options) {

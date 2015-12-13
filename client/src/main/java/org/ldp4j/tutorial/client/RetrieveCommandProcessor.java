@@ -97,16 +97,6 @@ final class RetrieveCommandProcessor extends AbstractLdpCommandProcessor {
 		return method;
 	}
 
-	private Resource refreshResource(CommandResponse response) throws IOException {
-		Resource resource = getOrCreateResource(response.resource());
-		resource.
-			withContentType(response.contentType().orNull()).
-			withLastModified(response.lastModified().orNull()).
-			withEntityTag(response.entityTag().orNull()).
-			withEntity(response.body().orNull());
-		return resource;
-	}
-
 	private String contentType(CommandContext options) {
 		String rawContentType=options.contentType();
 		if(rawContentType==null) {
