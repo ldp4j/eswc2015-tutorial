@@ -321,7 +321,7 @@ public abstract class ContactsService {
      * Adds a new Person to the application. This person can manage the her
      * contacts using the application. If the service changes any of the values from newPerson
      * it will be reflected in the returned person object.
-     * @param newPerson a new person to be added to the app
+     * @param account id of the person to be added to the app
      * @return Person object that reflects the state of the newly created person
      */
     public abstract Person createPerson(String account, String name, String location, String workplaceHomepage);
@@ -348,7 +348,7 @@ public abstract class ContactsService {
 
 	/**
      * Adds a contact to this person's contact list
-     * @param contact
+     * @param personId account id
      */
     public abstract Contact addContactToPerson(String personId, String fullName, String url, String email, String telephone);
 

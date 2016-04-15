@@ -64,7 +64,6 @@ public interface  Person {
     /**
      * Sets the city of the person
      * Property: <a href="http://xmlns.com/foaf/0.1/based_near">foaf:based_near</a>
-     * @return
      */
     public void setLocation(String location);
 
