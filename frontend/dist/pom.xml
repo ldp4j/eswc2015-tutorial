@@ -59,7 +59,7 @@
 	<!-- =================================================================== -->
 
 	<properties>
-		<frontend.http.port>80</frontend.http.port>
+		<frontend.http.port>8000</frontend.http.port>
 	</properties>
 
 	<dependencyManagement>
