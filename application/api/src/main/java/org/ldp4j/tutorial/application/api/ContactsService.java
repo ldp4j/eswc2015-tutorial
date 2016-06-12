@@ -86,7 +86,7 @@ public abstract class ContactsService {
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
+				final String delegateClassName = System.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -97,32 +97,32 @@ public abstract class ContactsService {
 			}
 
 			return result;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new IllegalStateException("Could not find runtime delegate",ex);
 		}
 	}
 
 	private static ContactsService createRuntimeInstanceFromConfigurationFile() {
 		ContactsService result=null;
-		File configFile = getConfigurationFile();
+		final File configFile = getConfigurationFile();
 		if(configFile.canRead()) {
 			InputStream is=null;
 			try {
 				is=new FileInputStream(configFile);
-				Properties configProperties=new Properties();
+				final Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
+				final String delegateClassName=configProperties.getProperty(CONTACTS_SERVICE_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
 				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Configuration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
 				}
-			} catch(FileNotFoundException e) {
+			} catch(final FileNotFoundException e) {
 				if(LOGGER.isDebugEnabled()) {
 					LOGGER.debug("Could not find runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
-			} catch(IOException e) {
+			} catch(final IOException e) {
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Could not load runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
@@ -146,14 +146,17 @@ public abstract class ContactsService {
 
 	/**
 	 * Close an input stream logging possible failures.
-	 * @param is The input stream that is to be closed.
-	 * @param message The message to log in case of failure.
+	 *
+	 * @param is
+	 *            The input stream that is to be closed.
+	 * @param message
+	 *            The message to log in case of failure.
 	 */
-	private static void closeQuietly(InputStream is, String message) {
+	private static void closeQuietly(final InputStream is, final String message) {
 		if(is!=null) {
 		try {
 			is.close();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			if(LOGGER.isWarnEnabled()) {
 				LOGGER.warn(message,e);
 			}
@@ -163,37 +166,32 @@ public abstract class ContactsService {
 
 	private static ContactsService createRuntimeInstanceFromSPI() {
 		if(!"disable".equalsIgnoreCase(System.getProperty(CONTACTS_SERVICE_SPI_DELEGATE_FINDER))) {
-			for (ContactsService delegate : ServiceLoader.load(ContactsService.class)) {
+			for (final ContactsService delegate : ServiceLoader.load(ContactsService.class)) {
 				return delegate;
 			}
 		}
 		return null;
 	}
 
-	private static ContactsService createRuntimeInstanceForClassName(String delegateClassName) {
+	private static ContactsService createRuntimeInstanceForClassName(final String delegateClassName) {
 		ContactsService result = null;
 		try {
-			Class<?> delegateClass = Class.forName(delegateClassName);
+			final Class<?> delegateClass = Class.forName(delegateClassName);
 			if(ContactsService.class.isAssignableFrom(delegateClass)) {
-				Object impl = delegateClass.newInstance();
+				final Object impl = delegateClass.newInstance();
 				result = ContactsService.class.cast(impl);
 			}
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			handleFailure(delegateClassName, "find", e);
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
 		}
 		return result;
 	}
 
-	/**
-	 * @param delegateClassName
-	 * @param action
-	 * @param failure
-	 */
-	private static void handleFailure(String delegateClassName, String action, Exception failure) {
+	private static void handleFailure(final String delegateClassName, final String action, final Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
 			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
 		}
@@ -228,7 +226,7 @@ public abstract class ContactsService {
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
 	 *
-	 * @return an instance of {@code RuntimeInstance}.
+	 * @return an instance of {@code ContactsService}.
 	 */
 	public static ContactsService getInstance() {
 		ContactsService result = ContactsService.CACHED_DELEGATE.get();
@@ -238,7 +236,7 @@ public abstract class ContactsService {
 		synchronized(ContactsService.CACHED_DELEGATE) {
 			result=ContactsService.CACHED_DELEGATE.get();
 			if(result==null) {
-				ContactsService delegate = findDelegate();
+				final ContactsService delegate = findDelegate();
 				ContactsService.CACHED_DELEGATE.set(delegate);
 				result=ContactsService.CACHED_DELEGATE.get();
 			}
@@ -259,7 +257,7 @@ public abstract class ContactsService {
 	 *             granted.
 	 */
 	public static void setInstance(final ContactsService delegate) {
-		SecurityManager security = System.getSecurityManager();
+		final SecurityManager security = System.getSecurityManager();
 		if (security != null) {
 			security.checkPermission(suppressAccessChecksPermission);
 		}
@@ -271,21 +269,21 @@ public abstract class ContactsService {
 		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",ContactsService.class);
 
 		@Override
-		public Person createPerson(String account, String name,
-				String location, String workplaceHomepage) {
+		public Person createPerson(final String account, final String name,
+				final String location, final String workplaceHomepage) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 
 		@Override
-		public Contact addContactToPerson(String personId, String fullName, String url,
-				String email, String telephone) {
+		public Contact addContactToPerson(final String personId, final String fullName, final String url,
+				final String email, final String telephone) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 
 		@Override
-		public Person getPerson(String account) {
+		public Person getPerson(final String account) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
@@ -296,81 +294,115 @@ public abstract class ContactsService {
 		}
 
 		@Override
-		public boolean deletePerson(String account) {
+		public boolean deletePerson(final String account) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 		@Override
-		public Contact getPersonContact(String account, String email) {
+		public Contact getPersonContact(final String account, final String email) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 		@Override
-		public Collection<Contact> listPersonContacts(String account) {
+		public Collection<Contact> listPersonContacts(final String account) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 		@Override
-		public boolean deletePersonContact(String account, String email) {
+		public boolean deletePersonContact(final String account, final String email) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 	}
 
-    /**
-     * Adds a new Person to the application. This person can manage the her
-     * contacts using the application. If the service changes any of the values from newPerson
-     * it will be reflected in the returned person object.
-     * @param newPerson a new person to be added to the app
-     * @return Person object that reflects the state of the newly created person
-     */
-    public abstract Person createPerson(String account, String name, String location, String workplaceHomepage);
+	/**
+	 * Adds a new Person to the application. This person can manage the her
+	 * contacts using the application. If the service changes any of the values
+	 * it will be reflected in the returned person object.
+	 *
+	 * @param account the person's account
+	 * @param name the person's name
+	 * @param location the person's location
+	 * @param workplaceHomepage the person's workplace homepage.
+	 * @return Person object that reflects the state of the newly created person
+	 */
+	public abstract Person createPerson(String account, String name, String location, String workplaceHomepage);
 
-    /***
+	/***
 	 * Returns the person with the given account id.
-	 * @param account id of the person
+	 *
+	 * @param account
+	 *            id of the person
 	 * @return Person with the given id if she exists, null otherwise
 	 */
 	public abstract Person getPerson(String account);
 
 	/***
 	 * Returns the current list of persons managed by the application.
+	 *
 	 * @return a collection of Persons
 	 */
 	public abstract Collection<Person> listPersons();
 
 	/***
 	 * Deletes the person with the given account id.
-	 * @param account id of the person
-	 * @return true if the person was found and deleted, false otherwise
+	 *
+	 * @param personId
+	 *            id of the person
+	 * @return {@code true} if the person was found and deleted, {@code false} otherwise
 	 */
-	public abstract boolean deletePerson(String account);
+	public abstract boolean deletePerson(String personId);
 
 	/**
-     * Adds a contact to this person's contact list
-     * @param contact
-     */
-    public abstract Contact addContactToPerson(String personId, String fullName, String url, String email, String telephone);
-
-
-    /**
-	 * Gets a contact identified by the email address
+	 * Adds a contact to this person's contact list
+	 *
+	 * @param personId
+	 *            the identifier of the person to whom the new contact will be
+	 *            added
+	 * @param fullName
+	 *            the contact's full name
+	 * @param url
+	 *            the contact's url
 	 * @param email
-	 * @return
+	 *            the contact's email
+	 * @param telephone
+	 *            the contact's telephone
+	 * @return the newly created contact
 	 */
-	public abstract Contact getPersonContact(String account, String email);
+	public abstract Contact addContactToPerson(String personId, String fullName, String url, String email, String telephone);
+
 
 	/**
-	 * Returns the contacts of this person
-	 * @return a collection of contacts
+	 * Gets the contact identified by the email address for the specified person
+	 *
+	 * @param personId
+	 *            the identifier of the person whose contact is to be retrieved
+	 * @param email
+	 *            the email of the contact to be retrieved
+	 * @return the contact of the specified person with matching email
 	 */
-	public abstract Collection<Contact> listPersonContacts(String account);
+	public abstract Contact getPersonContact(String personId, String email);
 
 	/**
-     * Delete a contact from the person's contact list
-     * @param email identifier for the contact
-     * @return true if the contact was present and deleted, false otherwise
-     */
-    public abstract boolean deletePersonContact(String account, String email);
+	 * Returns the contacts of a person
+	 *
+	 * @param personId
+	 *            the identifier of the person from which to retrieve the
+	 *            contacts
+	 * @return the contacts of the specified person
+	 */
+	public abstract Collection<Contact> listPersonContacts(String personId);
+
+	/**
+	 * Delete a contact from the person's contact list
+	 *
+	 * @param personId
+	 *            the identifier of the person whose contact is to be deleted
+	 * @param email
+	 *            the email of the contact to be deleted
+	 * @return {@code true} it the person's contact could be deleted,
+	 *         {@code false} otherwise.
+	 */
+	public abstract boolean deletePersonContact(String personId, String email);
 
 }

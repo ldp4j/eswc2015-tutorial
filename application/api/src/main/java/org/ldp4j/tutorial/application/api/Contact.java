@@ -28,55 +28,66 @@ package org.ldp4j.tutorial.application.api;
 
 public interface Contact {
 
-    /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
-     * @return the formatted name of the contact.
-     */
-    public String getFullName();
+	/**
+	 * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
+	 *
+	 * @return the formatted name of the contact.
+	 */
+	public String getFullName();
 
-    /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
-     * @return the url (e.g., homepage) of the contact.
-     */
-    public String getUrl();
+	/**
+	 * Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
+	 *
+	 * @return the url (e.g., homepage) of the contact.
+	 */
+	public String getUrl();
 
-    /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
-     * @return the email of the contact.
-     */
-    public String getEmail();
+	/**
+	 * Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
+	 *
+	 * @return the email of the contact.
+	 */
+	public String getEmail();
 
-    /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
-     * @return the telephone of the contact.
-     */
-    public String getTelephone();
+	/**
+	 * Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
+	 *
+	 * @return the telephone of the contact.
+	 */
+	public String getTelephone();
 
-    /**
-     * Sets the full name of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
-     * @param fullName
-     */
-    public void setFullName(String fullName);
+	/**
+	 * Sets the full name of the contact. Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
+	 *
+	 * @param fullName the new full name for the contact
+	 */
+	public void setFullName(String fullName);
 
-    /**
-     * Sets the url of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
-     * @param url
-     */
-    public void setUrl(String url);
+	/**
+	 * Sets the url of the contact. Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
+	 *
+	 * @param url the new url for the contact
+	 */
+	public void setUrl(String url);
 
-    /**
-     * Sets the email of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
-     * @param email
-     */
-    public void setEmail(String email);
+	/**
+	 * Sets the email of the contact. Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
+	 *
+	 * @param email the new email for the contact
+	 */
+	public void setEmail(String email);
 
-    /**
-     * Sets the telephone of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
-     * @param telephone
-     */
-    public void setTelephone(String telephone);
+	/**
+	 * Sets the telephone of the contact. Property:
+	 * <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
+	 *
+	 * @param telephone the new telephone for the contact
+	 */
+	public void setTelephone(String telephone);
 }

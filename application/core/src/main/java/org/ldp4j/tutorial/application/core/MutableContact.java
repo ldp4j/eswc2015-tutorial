@@ -35,87 +35,69 @@ public class MutableContact implements Contact {
     private String telephone;
     private String email;
 
+
     /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
-     *
-     * @return the formatted name of the contact.
+     * {@inheritDoc}
      */
     @Override
     public String getFullName() {
-        return fullName;
+        return this.fullName;
     }
 
     /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
-     *
-     * @return the url (e.g., homepage) of the contact.
+     * {@inheritDoc}
      */
     @Override
     public String getUrl() {
-        return url;
+        return this.url;
     }
 
     /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
-     *
-     * @return the email of the contact.
+     * {@inheritDoc}
      */
     @Override
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     /**
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
-     *
-     * @return the telephone of the contact.
+     * {@inheritDoc}
      */
     @Override
     public String getTelephone() {
-        return telephone;
+        return this.telephone;
     }
 
     /**
-     * Sets the full name of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e891">vcard:fn</a>
-     *
-     * @param fullName
+     * {@inheritDoc}
      */
     @Override
-    public void setFullName(String fullName) {
+    public void setFullName(final String fullName) {
         this.fullName =fullName;
     }
 
     /**
-     * Sets the url of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e605">vcard:hasURL</a>
-     *
-     * @param url
+     * {@inheritDoc}
      */
     @Override
-    public void setUrl(String url) {
+    public void setUrl(final String url) {
         this.url = url;
     }
 
     /**
-     * Sets the email of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e183">vcard:hasEmail</a>
-     *
-     * @param email
+     * {@inheritDoc}
      */
     @Override
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
     /**
-     * Sets the telephone of the contact.
-     * Property: <a href="http://www.w3.org/TR/vcard-rdf/#d4e563">vcard:hasTelephone</a>
-     *
-     * @param telephone
+     * {@inheritDoc}
      */
     @Override
-    public void setTelephone(String telephone) {
+    public void setTelephone(final String telephone) {
         this.telephone = telephone;
     }
+
 }
