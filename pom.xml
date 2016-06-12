@@ -7,7 +7,7 @@
       Center for Open Middleware
         http://www.centeropenmiddleware.com/
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Copyright (C) 2014 Center for Open Middleware.
+      Copyright (C) 2014-2016 Center for Open Middleware.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
       Licensed under the Apache License, Version 2.0 (the "License");
       you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@
 	<parent>
 		<groupId>org.ldp4j</groupId>
 		<artifactId>ldp4j-build</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.ldp4j.tutorial</groupId>
@@ -60,7 +60,7 @@
 	<!-- =================================================================== -->
 
 	<properties>
-		<ldp4j.version>0.2.0-SNAPSHOT</ldp4j.version>
+		<ldp4j.version>0.3.0-SNAPSHOT</ldp4j.version>
 	</properties>
 
 	<modules>
