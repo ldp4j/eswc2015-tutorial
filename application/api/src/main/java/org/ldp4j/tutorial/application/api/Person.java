@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.tutorial.application:application-api:1.0.0-SNAPSHOT
- *   Bundle      : application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.tutorial.application:application-api:1.0.0
+ *   Bundle      : application-api-1.0.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.tutorial.application.api;
@@ -29,55 +29,69 @@ package org.ldp4j.tutorial.application.api;
 
 public interface  Person {
 
-    /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
-     * @return the email of the person.
-     */
-    public String getEmail();
+	/**
+	 * Property: <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
+	 *
+	 * @return the email of the person.
+	 */
+	public String getEmail();
 
-    /**
-     * Sets the email of the person;
-     * Property: <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
-     * @param email email of the person
-     */
-    public void setEmail(String email);
+	/**
+	 * Sets the email of the person; Property:
+	 * <a href="http://xmlns.com/foaf/0.1/mbox">foaf:mbox</a>
+	 *
+	 * @param email
+	 *            email of the person
+	 */
+	public void setEmail(String email);
 
-    /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/name">foaf:name</a>
-     * @return the name of the person holding the account
-     */
-    public String getName();
+	/**
+	 * Property: <a href="http://xmlns.com/foaf/0.1/name">foaf:name</a>
+	 *
+	 * @return the name of the person holding the account
+	 */
+	public String getName();
 
-    /**
-     * Sets the name of the person
-     * Property: <a href="http://xmlns.com/foaf/0.1/name">foaf:name</a>
-     * @param name name of the person
-     */
-    public void setName(String name);
+	/**
+	 * Sets the name of the person Property:
+	 * <a href="http://xmlns.com/foaf/0.1/name">foaf:name</a>
+	 *
+	 * @param name
+	 *            name of the person
+	 */
+	public void setName(String name);
 
-    /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/based_near">foaf:based_near</a>
-     * @return
-     */
-    public String getLocation();
+	/**
+	 * Property:
+	 * <a href="http://xmlns.com/foaf/0.1/based_near">foaf:based_near</a>
+	 *
+	 * @return the location of the person.
+	 */
+	public String getLocation();
 
-    /**
-     * Sets the city of the person
-     * Property: <a href="http://xmlns.com/foaf/0.1/based_near">foaf:based_near</a>
-     * @return
-     */
-    public void setLocation(String location);
+	/**
+	 * Sets the city of the person Property:
+	 * <a href="http://xmlns.com/foaf/0.1/based_near">foaf:based_near</a>
+	 *
+	 * @param location
+	 *            the new location for the person.
+	 */
+	public void setLocation(String location);
 
-    /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:workplaceHomepage</a>
-     * @return
-     */
-    public String getWorkplaceHomepage();
+	/**
+	 * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:
+	 * workplaceHomepage</a>
+	 *
+	 * @return the workplace homepage of the person
+	 */
+	public String getWorkplaceHomepage();
 
-    /**
-     * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:workplaceHomepage</a>
-     * @param workplacehomepage
-     */
-    public void setWorkplaceHomepage(String workplacehomepage);
+	/**
+	 * Property: <a href="http://xmlns.com/foaf/0.1/workplaceHomepage">foaf:
+	 * workplaceHomepage</a>
+	 *
+	 * @param workplacehomepage the new workplace homepage of the person
+	 */
+	public void setWorkplaceHomepage(String workplacehomepage);
 
 }
