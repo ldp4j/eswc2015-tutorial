@@ -69,4 +69,25 @@
 		<module>client</module>
 	</modules>
 
+	<!-- =================================================================== -->
+	<!--   REPOSITORIES                                                    -->
+	<!-- =================================================================== -->
+
+	<!-- Sonatype OSSRH where LDP4j snapshots are deployed -->
+	<repositories>
+	        <repository>
+	            <id>oss-snapshots</id>
+	            <url>
+	                https://oss.sonatype.org/content/groups/public
+	            </url>
+	            <snapshots>
+	                <enabled>true</enabled>
+	                <updatePolicy>daily</updatePolicy>
+	            </snapshots>
+	            <releases>
+	                <enabled>false</enabled>
+	            </releases>
+	        </repository>
+	</repositories>
+
 </project>
